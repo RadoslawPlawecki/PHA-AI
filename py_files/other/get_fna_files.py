@@ -1,6 +1,5 @@
 """
 @author: Radosław Pławecki
-
 The script to get the *.fna file with the assembled metagenomes for every tool (geNomad/VirSorter2/VIBRANT).
 """
 
