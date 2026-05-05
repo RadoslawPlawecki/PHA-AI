@@ -4,7 +4,7 @@ from .writer import write_csv
 
 def main():
     data = scan()
-    write_csv("runtimes.csv", data)
+    write_csv("metadata.csv", data)
 
 
 if __name__ == "__main__":
