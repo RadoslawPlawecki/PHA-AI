@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 from datetime import datetime, timedelta
-from .utils import extract_first_time, extract_last_time
+from .utils import extract_first_time, extract_last_time, get_virsorter2_log_time
 
 VIBRANT_RE = re.compile(r"Runtime:\s*([0-9.]+)\s*minutes")
 
@@ -16,19 +16,17 @@ def runtime_vibrant(file_path: Path):
 
 
 def runtime_virsorter2(folder: Path):
-    log_file = folder / "log" / "iter-0" / "step1-pp" / "circular-remove-partial-gene-common.log"
+    start_file = folder / "log" / "iter-0" / "step1-pp" / "circular-remove-partial-gene-common.log"
+    end_file = folder / "log" / "iter-0" / "step2-extract-feature" / "extract-feature-from-hmmout-common.log"
 
-    if not log_file.exists():
+    if not start_file.exists() or not end_file.exists():
         return None
+    
+    start_time = get_virsorter2_log_time(start_file)
+    end_time = get_virsorter2_log_time(end_file)
 
-    with open(log_file) as f:
-        first_line = f.readline()
-
-    start_str = first_line.split("]")[0].strip("[")
-    start_str = " ".join(start_str.split()[:2])
-
-    start_time = datetime.strptime(start_str, "%Y-%m-%d %H:%M")
-    end_time = datetime.fromtimestamp(folder.stat().st_mtime)
+    if end_time < start_time:
+        end_time += timedelta(days=1)
 
     return round((end_time - start_time).total_seconds() / 60)
 
