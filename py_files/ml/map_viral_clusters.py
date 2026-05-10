@@ -4,61 +4,67 @@
 
 import pandas as pd
 import numpy as np
+import os
 
+roots_dict = {
+    "genomad": "geN",
+    "virsorter2": "VS2",
+    "vibrant": "VIB"
+}
 
-ROOTS = [
-    'data/vcontact2/output/genomad/geN_ChV_PHA_PROT_vC2/genome_by_genome_overview.csv',
-    'data/vcontact2/output/virsorter2/VS2_ChV_PHA_PROT_vC2/genome_by_genome_overview.csv',
-    'data/vcontact2/output/vibrant/VIB_ChV_PHA_PROT_vC2/genome_by_genome_overview.csv',
-]
-
-OUTPUTS = [
-    'data/ml/geN_vC2.csv',
-    'data/ml/VS2_vC2.csv',
-    'data/ml/VIB_vC2.csv',
-]
-
+input_path = 'data/vcontact2/output/'
+output_path = 'data/ml/'
 
 allowed_statuses = ['Clustered', 'Clustered/Singleton']
-min_patients = 2
 
-for file_path, out_path in zip(ROOTS, OUTPUTS):
-    df = pd.read_csv(file_path, delimiter=',')
+roots = os.listdir(input_path)
+for root in roots:
+    for i in range(1, 11):
+        min_patients = i
 
-    df.columns = ['Genome', 'Order', 'Family', 'Genus', 'preVC', 'Status', 'VC'] + list(df.columns[7:])
+        in_path = os.path.join(input_path, root, f'{roots_dict[root]}_ChV_PHA_PROT_vC2/genome_by_genome_overview.csv')
 
-    print(f"\n[INFO] {file_path}")
-    print(f"[INFO] {len(df)} rows loaded.")
+        df = pd.read_csv(in_path, delimiter=',')
 
-    # only clustered data
-    df_filtered = df[df['Status'].isin(allowed_statuses)].copy()
+        df.columns = ['Genome', 'Order', 'Family', 'Genus', 'preVC', 'Status', 'VC'] + list(df.columns[7:])
 
-    # remove reference viruses (S = reference)
-    df_filtered = df_filtered[df_filtered['Genome'].str.match(r'^S\d+_', na=False)]
+        print(f"\n[INFO] {in_path}")
+        print(f"[INFO] {len(df)} rows loaded.")
 
-    # patient id
-    df_filtered['id'] = df_filtered['Genome'].str.split('_').str[0]
+        # only clustered data
+        df_filtered = df[df['Status'].isin(allowed_statuses)].copy()
 
-    print(f"[INFO] {len(df_filtered)} rows after filtering.")
+        # remove reference viruses (S = reference)
+        df_filtered = df_filtered[df_filtered['Genome'].str.match(r'^S\d+_', na=False)]
 
-    # VC x Patient matrix
-    binary_matrix = pd.crosstab(df_filtered['VC'], df_filtered['id'])
+        # patient id
+        df_filtered['id'] = df_filtered['Genome'].str.split('_').str[0]
 
-    # binarization
-    binary_matrix = (binary_matrix > 0).astype(int)
+        print(f"[INFO] {len(df_filtered)} rows after filtering.")
 
-    # remove rare clusters
-    vc_mask = binary_matrix.sum(axis=1) >= min_patients
+        # VC x Patient matrix
+        binary_matrix = pd.crosstab(df_filtered['VC'], df_filtered['id'])
 
-    # transpose matrix to Patient x VC
-    df = binary_matrix[vc_mask].T
+        # binarization
+        binary_matrix = (binary_matrix > 0).astype(int)
 
-    # add labels
-    sample_id = df.index.str.replace('S', '').astype(int)
-    label = (sample_id <= 34).astype(int)
+        # dimensionality reduction
+        vc_mask = binary_matrix.sum(axis=1) >= min_patients
 
-    df.insert(0, 'label', label)
-    print(f"[INFO] matrix {df.shape} generated.")
+        # transpose matrix to Patient x VC
+        df = binary_matrix[vc_mask].T
 
-    # save per tool
-    df.to_csv(out_path)
+        # add labels
+        sample_id = df.index.str.replace('S', '').astype(int)
+        label = (sample_id <= 34).astype(int)
+
+        df.insert(0, 'label', label)
+        print(f"[INFO] matrix {df.shape} generated.")
+        
+        # save per tool
+        dir_path = os.path.join(output_path, root)
+        os.makedirs(dir_path, exist_ok=True)
+
+        out_path = os.path.join(dir_path, f'{roots_dict[root]}_vC2_mP{min_patients}.csv')
+        df.to_csv(out_path)
+        print(f"[INFO] output written to: {out_path}")

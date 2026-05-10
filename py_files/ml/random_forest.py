@@ -11,12 +11,17 @@ from tqdm import tqdm
 
 
 class LOOCVRandomForest:
-    def __init__(self, random_state=42, verbose=True):
+    def __init__(self, random_state=42, n_estimators=300, max_depth=3, min_samples_leaf=2, use_smote=True, smote_k=1, verbose=True):
         self.model = RandomForestClassifier(
-            n_estimators=100,
+            n_estimators=n_estimators,
             class_weight='balanced',
-            random_state=random_state
+            random_state=random_state,
+            min_samples_leaf=min_samples_leaf,
+            max_depth=max_depth
         )
+
+        self.use_smote = use_smote
+        self.smote_k = smote_k
         self.verbose = verbose
 
     def run(self, X, y):
@@ -39,10 +44,12 @@ class LOOCVRandomForest:
             X_train, X_test = X[train_idx], X[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
 
-            smote = SMOTE(random_state=42, k_neighbors=1)
-            X_res, y_res = smote.fit_resample(X_train, y_train)
-
-            self.model.fit(X_res, y_res)
+            if self.use_smote:
+                smote = SMOTE(random_state=42, k_neighbors=self.smote_k)
+                X_res, y_res = smote.fit_resample(X_train, y_train)
+                self.model.fit(X_res, y_res)
+            else:
+                self.model.fit(X_train, y_train)
 
             y_pred.extend(self.model.predict(X_test))
             y_prob.extend(self.model.predict_proba(X_test)[:, 1])
@@ -64,8 +71,10 @@ class RepeatedStratifiedRF:
     def __init__(
         self,
         n_splits=5,
-        n_repeats=10,
-        n_estimators=100,
+        n_repeats=20,
+        n_estimators=300,
+        max_depth=3,
+        min_samples_leaf=2,
         random_state=42,
         use_smote=True,
         smote_k=2,
@@ -81,6 +90,8 @@ class RepeatedStratifiedRF:
             n_estimators=n_estimators,
             class_weight='balanced',
             random_state=random_state,
+            min_samples_leaf=min_samples_leaf,
+            max_depth=max_depth
         )
 
         self.use_smote = use_smote
