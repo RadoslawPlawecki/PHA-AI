@@ -28,6 +28,7 @@ def format_metrics(metrics):
         f"Recall (Sensitivity): {format_metric(metrics['recall'])}\n"
         f"Specificity: {format_metric(metrics['specificity'])}\n"
         f"G-Mean: {format_metric(metrics['geometric_mean'])}\n"
+        f"NPV: {format_metric(metrics['npv'])}\n"
         f"Average Precision Score: {format_metric(metrics['pr_auc'])}\n"
         f"Matthews Correlation Coefficient: {format_metric(metrics['mcc'])}\n"
     )

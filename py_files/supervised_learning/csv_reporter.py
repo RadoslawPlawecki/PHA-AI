@@ -19,6 +19,7 @@ class CSVReporter:
             "recall": "recall",
             "specificity": "specificity",
             "geometric_mean": "gmean",
+            "npv": "nvp",
             "pr_auc": "pr_auc",
             "mcc": "mcc",
         }

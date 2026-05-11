@@ -7,15 +7,8 @@ import numpy as np
 
 class BootstrapCI:
     @staticmethod
-    def compute(
-        y_true,
-        y_pred,
-        y_prob,
-        metric_fn,
-        n_bootstrap=2000,
-        alpha=0.95,
-        random_state=42
-    ):
+    def compute(y_true, y_pred, y_prob, metric_fn, 
+                n_bootstrap=2000, alpha=0.95, random_state=42):
         rng = np.random.RandomState(random_state)
 
         scores = []
@@ -32,11 +25,7 @@ class BootstrapCI:
             if len(np.unique(y_true_bs)) < 2:
                 continue
 
-            score = metric_fn(
-                y_true_bs,
-                y_pred_bs,
-                y_prob_bs
-            )
+            score = metric_fn(y_true_bs, y_pred_bs, y_prob_bs)
 
             scores.append(score)
 

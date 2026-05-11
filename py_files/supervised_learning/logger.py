@@ -8,7 +8,7 @@ from tqdm import tqdm
 from datetime import datetime
 
 
-def setup_logger(name="tool", log_dir="experiments"):
+def setup_logger(name="tool", log_dir="logs"):
     os.makedirs(log_dir, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
