@@ -29,7 +29,7 @@ class vC2FeaturePrep:
         print(f"[INFO] {len(df)} rows loaded.")
 
         df_filtered = df[df['Status'].isin(self.allowed_statuses)].copy()
-        df_filtered = df_filtered[df_filtered['Genome'].str.match(r'^S\d+_', na=False)]
+        df_filtered = df_filtered[df_filtered['Genome'].str.match(r'^[^|]+\|S\d+_', na=False)]
 
         if df_filtered.empty:
             print("[WARNING] No records after filtering.")
@@ -43,7 +43,7 @@ class vC2FeaturePrep:
         vc_mask = binary_matrix.sum(axis=1) >= self.min_patients
         df_out = binary_matrix[vc_mask].T
 
-        sample_id = df_out.index.str.replace('S', '').astype(int)
+        sample_id = (df_out.index.str.replace(r'^[^|]+\|S', '', regex=True).str.split('_').str[0].astype(int))
         label = (sample_id <= 34).astype(int)
 
         df_out.insert(0, 'label', label)

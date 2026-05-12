@@ -11,7 +11,9 @@ class DataLoader:
 
     def process(self, df):
         df = df.copy()
-        y = (df.index.str.replace('S', '').astype(int) <= 34).astype(int)
+        sample_ids = df.index.to_series().astype(str).str.extract(r'(\d+)')[0]
+        sample_ids = pd.to_numeric(sample_ids, errors='coerce')
+        y = (sample_ids <= 34).astype(int)
         X = df.drop(columns=['label'], errors='ignore')
-        return X.values, y, X.columns
+        return X.values, y.values, X.columns
         
