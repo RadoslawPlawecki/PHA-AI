@@ -1,3 +1,5 @@
+#TODO: retrieve only needed columns for the further analysis
+
 import pandas as pd
 from pathlib import Path
 
@@ -25,6 +27,7 @@ for file in in_root.iterdir():
 
 
 # ----- PHAGCN FILES PREPROCESSING
+#TODO: filter singletons - retrieve known_genus; split lineage into columns
 """in_root = Path("data/phabox2/raw-merged/phagcn")
 out_root = Path("data/phabox2/preprocessed/phagcn")
 
@@ -47,6 +50,7 @@ for file in in_root.iterdir():
 
 
 # ----- CHERRY FILES PREPROCESSING
+#TODO: filter where lineage is not the same (more strict); split lineage into columns
 """in_root = Path("data/phabox2/raw-merged/cherry")
 out_root = Path("data/phabox2/preprocessed/cherry")
 

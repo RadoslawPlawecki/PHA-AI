@@ -94,7 +94,6 @@ def main():
         logger.info("Initializing CatBoost...")
         model = get_catboost_model(use_smote=args.use_smote)
 
-    # 5. Validation & Metrics
     if args.run_loocv:
         logger.info(f"--- LOOCV {args.model_type.upper()} ---")
         results_loocv = LOOCVValidator(verbose=True).run(model, X, y)
