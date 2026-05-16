@@ -4,14 +4,20 @@
 
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def use_latex():
     """
     Function to use LaTeX formatting for plots.
     """
-    # use LaTeX for text rendering
-    plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
+    sns.set_style('whitegrid')   
+
     plt.rcParams.update({
-        'text.latex.preamble': r'\usepackage[utf8]{inputenc} \usepackage[T1]{fontenc}'
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern Roman"],
+        "text.latex.preamble": r"""
+            \usepackage[T1]{fontenc}
+            \usepackage{lmodern}
+        """
     })

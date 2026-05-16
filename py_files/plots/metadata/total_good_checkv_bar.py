@@ -31,19 +31,31 @@ groups = [all_samples[:mid_point], all_samples[mid_point:]]
 
 fig, axes = plt.subplots(2, 1, figsize=(14, 10))
 
+palette_main = {
+    'VIBRANT': '#66C2A5',
+    'VirSorter2': '#FC8D62',
+    'geNomad': '#8DA0CB'
+}
+
+palette_light = {
+    'VIBRANT': '#BFE7DB',
+    'VirSorter2': '#FDD1C2',
+    'geNomad': '#CCD5EE'
+}
+
 for i, sample_group in enumerate(groups):
     ax = axes[i]
     subset = df_long[df_long['Sample'].isin(sample_group)]
 
     sns.barplot(
         data=subset, x='Sample', y='Total', hue='Method',
-        palette={'VIBRANT': '#aec7e8', 'VirSorter2': '#ffbb78', 'geNomad': '#98df8a'},
+        palette=palette_light,
         ax=ax, alpha=1.0
     )
     
     sns.barplot(
         data=subset, x='Sample', y='Good', hue='Method',
-        palette={'VIBRANT': '#1f77b4', 'VirSorter2': '#ff7f0e', 'geNomad': '#2ca02c'},
+        palette=palette_main,
         ax=ax, alpha=1.0
     )
     ax.tick_params(axis='x', rotation=45, labelsize=12)
@@ -59,9 +71,9 @@ for ax in axes:
 
 from matplotlib.lines import Line2D
 custom_lines = [
-    Line2D([0], [0], color='#1f77b4', lw=4, label='VIBRANT (Good/Total)'),
-    Line2D([0], [0], color='#ff7f0e', lw=4, label='VirSorter2 (Good/Total)'),
-    Line2D([0], [0], color='#2ca02c', lw=4, label='geNomad (Good/Total)')
+    Line2D([0], [0], color='#66C2A5', lw=4, label='VIBRANT (Good/Total)'),
+    Line2D([0], [0], color='#FC8D62', lw=4, label='VirSorter2 (Good/Total)'),
+    Line2D([0], [0], color='#8DA0CB', lw=4, label='geNomad (Good/Total)')
 ]
 
 axes[0].legend(handles=custom_lines, loc='upper right', fontsize=10, frameon=True)

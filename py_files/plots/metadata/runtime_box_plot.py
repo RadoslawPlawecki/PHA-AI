@@ -22,24 +22,31 @@ labels = {
 df_melted['Tool'] = df_melted['Tool'].map(labels)
 
 plt.figure(figsize=(8, 5))
-sns.set_style('whitegrid')
+
+palette = {
+    'VIBRANT': '#66C2A5',
+    'VirSorter2': '#FC8D62',
+    'geNomad': '#8DA0CB'
+}
 
 ax = sns.boxplot(
     x='Tool', 
     y='Runtime [min]', 
     data=df_melted,
     hue='Tool',  
-    palette='Set2',
+    palette=palette,
     legend=False,   
     width=0.5,
     linewidth=1.2,
     flierprops={"marker": "x"}
 )
 
-plt.title('Genome assembly runtimes', fontsize=14)
-plt.xlabel('Tool', fontsize=12)
-plt.ylabel('Runtime [min]', fontsize=12)
+plt.title(r'\textbf{Genome assembly runtimes}', fontsize=16, pad=10)
+plt.xlabel('Tool', fontsize=14, labelpad=10)
+plt.ylabel('Runtime [min]', fontsize=14, labelpad=10)
 
 plt.tight_layout()
 plt.savefig('plots/metadata/runtime_box_plot.pdf') 
 plt.show()
+
+print(sns.color_palette("Set2").as_hex())
