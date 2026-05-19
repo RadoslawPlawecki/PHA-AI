@@ -41,7 +41,7 @@ class RepeatedCVValidator:
         self.cv = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
         self.verbose = verbose
 
-    def run(self, X, y):
+    def run(self, model_wrapper, X, y):
         y_true_all, y_pred_all, y_prob_all = [], [], []
         perm_importances = np.zeros(X.shape[1])
 

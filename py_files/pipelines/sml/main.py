@@ -2,7 +2,6 @@
 @author: Radosław Pławecki
 """
 
-from ..other.vc2_feature_prep import vC2FeaturePrep
 from .logger import setup_logger
 from .data_loader import DataLoader
 from .analyze_fisher import FisherAnalyzer
@@ -25,6 +24,7 @@ def parse_args():
 
     parser.add_argument("--in_file", type=str, required=True, help="Direct path to genome_by_genome_overview.csv")
     parser.add_argument("--out_file", type=str, default=None, help="Direct path to an output file")
+    parser.add_argument("--tool", type=str, default=None, help="Type of tool the data comes from")
 
     parser.add_argument("--min_patients", type=int, default=2, help="Number of patients sharing the same viral cluster (VC).")
 
@@ -58,16 +58,18 @@ def log_experiment_results(results, feature_names, importance_key, logger):
 def main():
     args = parse_args()
 
-    preprocessor = vC2FeaturePrep(args.in_file, args.min_patients)
-    ml_data = preprocessor.run()
-
     logger = setup_logger("vContact2_Classifier")
 
     logger.info("=== START EXPERIMENT ===")
 
     logger.info("Loading data...")
-    loader = DataLoader()
-    X, y, feature_names = loader.process(df=ml_data)
+    loader = DataLoader(
+        input_path=args.in_file, 
+        min_patients=args.min_patients,
+        tool=args.tool
+    )
+    X, y, feature_names = loader.process()
+    
     logger.info(f"Data shape: {X.shape[0]} samples, {X.shape[1]} features")
 
     if args.run_fisher:
