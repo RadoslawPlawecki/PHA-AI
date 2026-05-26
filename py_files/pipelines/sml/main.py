@@ -2,8 +2,8 @@
 @author: Radosław Pławecki
 """
 
-from .logger import setup_logger
-from .data_loader import DataLoader
+from ..common.logger import setup_logger
+from ..common.data_loader import DataLoader
 from .analyze_fisher import FisherAnalyzer
 from .models import *
 from .validators import *
@@ -20,11 +20,12 @@ from tqdm import tqdm
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="vContact2-based Classifier")
+    parser = argparse.ArgumentParser(description="Classifier")
 
-    parser.add_argument("--in_file", type=str, required=True, help="Direct path to genome_by_genome_overview.csv")
+    parser.add_argument("--in_file", type=str, required=True, help="Direct path to an input file")
     parser.add_argument("--out_file", type=str, default=None, help="Direct path to an output file")
     parser.add_argument("--tool", type=str, default=None, help="Type of tool the data comes from")
+    parser.add_argument("--column", type=str, default=None, help="Column with data selected as features")
 
     parser.add_argument("--min_patients", type=int, default=2, help="Number of patients sharing the same viral cluster (VC).")
 
@@ -58,7 +59,7 @@ def log_experiment_results(results, feature_names, importance_key, logger):
 def main():
     args = parse_args()
 
-    logger = setup_logger("vContact2_Classifier")
+    logger = setup_logger(f'{args.tool}_mP{args.min_patients}_{args.column}')
 
     logger.info("=== START EXPERIMENT ===")
 
@@ -68,7 +69,7 @@ def main():
         min_patients=args.min_patients,
         tool=args.tool
     )
-    X, y, feature_names = loader.process()
+    X, y, feature_names = loader.process(col=args.column)
     
     logger.info(f"Data shape: {X.shape[0]} samples, {X.shape[1]} features")
 
@@ -99,12 +100,14 @@ def main():
     if args.run_loocv:
         logger.info(f"--- LOOCV {args.model_type.upper()} ---")
         results_loocv = LOOCVValidator(verbose=True).run(model, X, y)
-        log_experiment_results(results_loocv, feature_names, "feature_importances", logger)
+        metrics = log_experiment_results(results_loocv, feature_names, "feature_importances", logger)
+        CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'loocv_mP{args.min_patients}_{args.column}', metrics=metrics)
 
     if args.run_repeated:
         logger.info(f"--- REPEATED CV {args.model_type.upper()} ---")
         results_rep = RepeatedCVValidator(verbose=True).run(model, X, y)
-        log_experiment_results(results_rep, feature_names, "perm_importances", logger)
+        metrics = log_experiment_results(results_rep, feature_names, "perm_importances", logger)
+        CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'rcv_mP{args.min_patients}_{args.column}', metrics=metrics)
 
     logger.info("=== END EXPERIMENT ===")
 

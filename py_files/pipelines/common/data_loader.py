@@ -32,14 +32,14 @@ class DataLoader:
         self.tool = tool
         self.min_patients = min_patients
 
-    def process(self):
+    def process(self, col=None):
         """Method to route to the specific tool processor and return features/labels."""
         if self.tool == "vcontact2":
             df = self._process_vcontact2()
         else:
-            df = self._process_generic()
+            df = self._process_generic(col)
 
-        sample_ids = df.index.astype(str).str.extract(r'(\d+)')[0]
+        sample_ids = df.index.astype(str).str.extract(r'\|S(\d+)')[0]
         sample_ids = pd.to_numeric(sample_ids, errors='coerce')
         
         y = (sample_ids <= 34).astype(int).values
@@ -65,7 +65,7 @@ class DataLoader:
         
         return self._build_matrix(df_filtered, feature_col='VC', id_col='id')
 
-    def _process_generic(self) -> pd.DataFrame:
+    def _process_generic(self, col=None) -> pd.DataFrame:
         """Method to handle processing for tools with identical CSV structures (Cherry, PhageGCN)."""
         df = pd.read_csv(self.input_path, delimiter=';')
         self._log_load(df)
@@ -73,17 +73,18 @@ class DataLoader:
         df = df[df['Accession'].str.match(r'^[^|]+\|S\d+_', na=False)].copy()
         df['id'] = df['Accession'].str.split('_').str[0]
         
-        selectable_columns = [col for col in df.columns if col not in {'Accession', 'id'}]
-        if not selectable_columns:
-            raise ValueError("No valid columns to choose from.")
+        if col is None:
+            selectable_columns = [col for col in df.columns if col not in {'Accession', 'id'}]
+            if not selectable_columns:
+                raise ValueError("No valid columns to choose from.")
+                
+            col = questionary.select(
+                "Choose a column:",
+                choices=selectable_columns
+            ).ask()
+            print(f"\n[INFO] Selected column: {col}")
             
-        selected_column = questionary.select(
-            "Choose a column:",
-            choices=selectable_columns
-        ).ask()
-        print(f"\n[INFO] Selected column: {selected_column}")
-        
-        return self._build_matrix(df, feature_col=selected_column, id_col='id')
+        return self._build_matrix(df, feature_col=col, id_col='id')
 
     def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str) -> pd.DataFrame:
         """Method to generate the binary cross-tabulation matrix and save it if necessary."""
