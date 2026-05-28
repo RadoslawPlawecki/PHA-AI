@@ -1,3 +1,7 @@
+"""
+@author: Radosław Pławecki
+"""
+
 import pandas as pd
 from pathlib import Path
 
@@ -35,30 +39,9 @@ def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
     return pd.concat([df, expanded], axis=1)
 
 
-# ----- PHAVIP FILES PREPROCESSING
-#TODO: learn how to process annotated proteins data
-"""in_root = Path("data/phabox2/raw-merged/phavip")
-out_root = Path("data/phabox2/preprocessed/phavip")
-
-for file in in_root.iterdir():
-    df = pd.read_csv(file, delimiter=';')
-    gtool_id = parts = file.stem.split('_')[0]
-    df["Genome"] = format_accession(gtool_id, df["Genome"])
-    df["ORF"] = format_accession(gtool_id, df["ORF"])
-    df["coverage"] = pd.to_numeric(df["coverage"], errors="coerce")
-    df = df[df["coverage"] >= 0.9]
-    df = df[df["Annotation"] != "hypothetical protein"]
-    df = df[['Genome', 'ORF', 'Annotation', 'pident', 'cloest_gene']]
-    for col in df.columns:
-        print(df[col].value_counts())
-    out_root.mkdir(parents=True, exist_ok=True)
-    out_path = out_root / f"{file.stem}_PP.csv"
-    # df.to_csv(out_path, sep=';', index=False)"""
-
-
 # ----- PHAGCN FILES PREPROCESSING
-"""in_root = Path("data/phabox2/raw-merged/phagcn")
-out_root = Path("data/phabox2/preprocessed/phagcn")
+"""in_root = Path("data/modalities/raw-merged/phagcn")
+out_root = Path("data/modalities/preprocessed/phagcn")
 
 for file in in_root.iterdir():
     df = pd.read_csv(file, delimiter=';')
@@ -87,8 +70,8 @@ for file in in_root.iterdir():
 
 
 # ----- CHERRY FILES PREPROCESSING
-"""in_root = Path("data/phabox2/raw-merged/cherry")
-out_root = Path("data/phabox2/preprocessed/cherry")
+"""in_root = Path("data/modalities/raw-merged/cherry")
+out_root = Path("data/modalities/preprocessed/cherry")
 
 for file in in_root.iterdir():
     df = pd.read_csv(file, delimiter=';')

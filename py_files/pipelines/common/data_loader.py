@@ -8,7 +8,7 @@ import os
 
 
 class DataLoader:
-    AVAILABLE_TOOLS = {"vcontact2", "cherry", "phagcn"}
+    AVAILABLE_TOOLS = {"vcontact2", "cherry", "phagcn", "phavip"}
 
     def __init__(
         self, 
