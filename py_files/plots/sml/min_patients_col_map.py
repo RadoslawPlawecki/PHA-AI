@@ -3,7 +3,7 @@
 """
 
 
-def plot_metric_run(gtool_name="geN", tool_name="CHR"):
+def plot_metric_run(metric_name="auc", gtool_name="geN", tool_name="CHR", method_name="loocv"):
     import pandas as pd
     from .plot_metric import plot_metric
 
@@ -12,7 +12,7 @@ def plot_metric_run(gtool_name="geN", tool_name="CHR"):
         "PGN": "phagcn"
     }
 
-    data_path = f"data/ml/sml/rf/{tool_name_dict[tool_name]}/{gtool_name}_{tool_name}_RF.csv"
+    data_path = f"data/results/sml/rf/{tool_name_dict[tool_name]}/{gtool_name}_{tool_name}_RF.csv"
     df = pd.read_csv(data_path)
 
     df_long = (
@@ -31,7 +31,7 @@ def plot_metric_run(gtool_name="geN", tool_name="CHR"):
 
     df_long = df_long.dropna(subset=["method"])
 
-    plot_metric(df_long, "mcc", "loocv")
+    plot_metric(df_long, metric_name, method_name)
 
 
-plot_metric_run(tool_name="PGN")
+plot_metric_run(metric_name="balanced_accuracy", tool_name="CHR", method_name="loocv")

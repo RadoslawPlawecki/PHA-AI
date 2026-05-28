@@ -74,7 +74,6 @@ def main():
     logger.info(f"Data shape: {X.shape[0]} samples, {X.shape[1]} features")
 
     if args.run_fisher:
-        # --- FISHER ---
         logger.info("Running Fisher's Exact Test...")
         fisher = FisherAnalyzer()
 

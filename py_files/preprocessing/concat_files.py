@@ -1,8 +1,8 @@
 from pathlib import Path
 import pandas as pd
 
-in_root = Path("data/phabox2/raw")
-out_root = Path("data/phabox2/raw-merged")
+in_root = Path("data/modalities/raw")
+out_root = Path("data/modalities/raw-merged")
 
 for ptool_dir in in_root.iterdir():
     if not ptool_dir.is_dir():

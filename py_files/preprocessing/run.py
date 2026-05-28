@@ -35,30 +35,65 @@ def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
     return pd.concat([df, expanded], axis=1)
 
 
+def extract_label(sample_id: str) -> int:
+    try:
+        s_part = sample_id.split('|')[-1]
+        x_val = int(s_part.replace('S', ''))
+        return 1 if x_val <= 34 else 0
+    except ValueError:
+        return 0
+
+
+def calculate_hypo_ratios(df: pd.DataFrame) -> dict:
+    counts = {}
+    for sample_id, group in df.groupby('Sample'):
+        counts[sample_id] = {
+            "total_orfs": len(group),
+            "hypo_count": (group["Annotation"] == "hypothetical protein").sum()
+        }
+    return counts
+
+
 # ----- PHAVIP FILES PREPROCESSING
-#TODO: learn how to process annotated proteins data
-"""in_root = Path("data/phabox2/raw-merged/phavip")
-out_root = Path("data/phabox2/preprocessed/phavip")
+in_root = Path("data/modalities/raw-merged/phavip")
+out_root = Path("data/modalities/preprocessed/phavip")
+
+hypo_dir = Path("data/modalities/features/phavip_hypo")
+
+sample_counts = {}
 
 for file in in_root.iterdir():
-    df = pd.read_csv(file, delimiter=';')
+    df = pd.read_csv(file, delimiter=';', on_bad_lines='warn')
     gtool_id = parts = file.stem.split('_')[0]
     df["Genome"] = format_accession(gtool_id, df["Genome"])
     df["ORF"] = format_accession(gtool_id, df["ORF"])
+    df['Sample'] = df['Genome'].astype(str).str.split('_').str[0]
+    current_file_counts = calculate_hypo_ratios(df)
     df["coverage"] = pd.to_numeric(df["coverage"], errors="coerce")
-    df = df[df["coverage"] >= 0.9]
+    df["pident"] = pd.to_numeric(df["pident"], errors="coerce")
+    df = df[df["coverage"] >= 0.7]
+    df = df[df["pident"] >= 0.35]
     df = df[df["Annotation"] != "hypothetical protein"]
-    df = df[['Genome', 'ORF', 'Annotation', 'pident', 'cloest_gene']]
-    for col in df.columns:
-        print(df[col].value_counts())
+    df = df[['Genome', 'ORF', 'Annotation']]
     out_root.mkdir(parents=True, exist_ok=True)
     out_path = out_root / f"{file.stem}_PP.csv"
-    # df.to_csv(out_path, sep=';', index=False)"""
+    df.to_csv(out_path, sep=';', index=False)
+    final_ratios = [
+        {
+            "id": sample_id,
+            "hypo": round(counts["hypo_count"] / counts["total_orfs"], 4) if counts["total_orfs"] > 0 else 0.0,
+            "label": extract_label(sample_id)
+        }
+        for sample_id, counts in current_file_counts.items()
+    ]
+    ratios_df = pd.DataFrame(final_ratios)
+    hypo_path = hypo_dir / f"{file.stem[:3]}_PHV_HR.csv"
+    ratios_df.to_csv(hypo_path, index=False)
 
 
 # ----- PHAGCN FILES PREPROCESSING
-"""in_root = Path("data/phabox2/raw-merged/phagcn")
-out_root = Path("data/phabox2/preprocessed/phagcn")
+"""in_root = Path("data/modalities/raw-merged/phagcn")
+out_root = Path("data/modalities/preprocessed/phagcn")
 
 for file in in_root.iterdir():
     df = pd.read_csv(file, delimiter=';')
@@ -87,8 +122,8 @@ for file in in_root.iterdir():
 
 
 # ----- CHERRY FILES PREPROCESSING
-"""in_root = Path("data/phabox2/raw-merged/cherry")
-out_root = Path("data/phabox2/preprocessed/cherry")
+"""in_root = Path("data/modalities/raw-merged/cherry")
+out_root = Path("data/modalities/preprocessed/cherry")
 
 for file in in_root.iterdir():
     df = pd.read_csv(file, delimiter=';')
