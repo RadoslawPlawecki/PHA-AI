@@ -3,7 +3,7 @@
 """
 
 from pathlib import Path
-from .process_phavip import PhavipFeatureExtractor
+from .feature_extractor import PhavipFeatureExtractor
 
 extractor = PhavipFeatureExtractor()
 
