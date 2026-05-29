@@ -6,11 +6,12 @@ if [[ -z "$tool" ]]; then
   echo "Usage: $0 <tool>"
   echo "Example: $0 cherry"
   echo "Example: $0 phagcn"
+  echo "Example: $0 phavip"
   exit 1
 fi
 
 if [[ "$tool" == "cherry" ]]; then
-  in_file="data/phabox2/preprocessed/cherry/VS2_ChV_CHR_M_PP.csv"
+  in_file="data/modalities/preprocessed/cherry/VS2_ChV_CHR_M_PP.csv"
   out_file="data/ml/sml/rf/cherry/VS2_CHR_RF.csv"
 
   columns=(
@@ -30,12 +31,20 @@ if [[ "$tool" == "cherry" ]]; then
   )
 
 elif [[ "$tool" == "phagcn" ]]; then
-  in_file="data/phabox2/preprocessed/phagcn/VS2_ChV_PGN_M_PP.csv"
+  in_file="data/modalities/preprocessed/phagcn/VS2_ChV_PGN_M_PP.csv"
   out_file="data/ml/sml/rf/phagcn/VS2_PGN_RF.csv"
 
   columns=(
     genus
     species
+  )
+
+elif [[ "$tool" == "phavip" ]]; then
+  in_file="data/modalities/preprocessed/phavip/VS2_ChV_PHA_ORFs_PHV_M_PP.csv"
+  out_file="data/results/sml/rf/phavip/VS2_PHV_RF.csv"
+
+  columns=(
+    Annotation
   )
 
 else
