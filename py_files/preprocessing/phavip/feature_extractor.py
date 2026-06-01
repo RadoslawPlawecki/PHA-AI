@@ -69,16 +69,13 @@ class PhavipFeatureExtractor:
         }
 
     def load_file(self, path: Path) -> pd.DataFrame:
+        from ..utils import format_accession
         df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
         gtool_id = path.stem.split('_')[0]
-        df["Accession"] = self.format_accession(gtool_id, df["Genome"])
-        df["ORF"] = self.format_accession(gtool_id, df["ORF"])
+        df["Accession"] = format_accession(gtool_id, df["Genome"])
+        df["ORF"] = format_accession(gtool_id, df["ORF"])
         df['id'] = df['Accession'].astype(str).str.split('_').str[0]
         return df
-
-    @staticmethod
-    def format_accession(prefix: str, column: pd.Series) -> pd.Series:
-        return prefix + "|" + column.str.replace(r'k_', 'k', regex=False)
 
     @staticmethod
     def extract_labels(samples: pd.Series) -> pd.Series:
