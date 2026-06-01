@@ -100,28 +100,7 @@ class PhavipFeatureExtractor:
             (df["coverage"] >= self.min_coverage) &
             (df["pident"] / 100 >= self.min_pident)
         ]
-        df = df[df["Annotation"] != "hypothetical protein"]
         return df
-
-    def calculate_hypo_ratios(self, df: pd.DataFrame, save_path: Optional[Path] = None) -> pd.DataFrame:
-        stats = (
-            df.groupby("id")
-            .agg(
-                total_orfs=("Annotation", "size"),
-                hypo_count=(
-                    "Annotation",
-                    lambda x: (
-                        x == "hypothetical protein"
-                    ).sum()
-                ),
-                label=("label", "first")
-            )
-        )
-        stats["hypo_ratio"] = (stats["hypo_count"] / stats["total_orfs"]).round(4)
-        result = stats[["label", "hypo_ratio"]].reset_index()
-        if save_path:
-            result.to_csv(save_path, sep=';', index=False)
-        return result
 
     def categorize_annotations(self, annotations: pd.Series) -> pd.Series:
         result = pd.Series("other_function", index=annotations.index)
@@ -133,7 +112,6 @@ class PhavipFeatureExtractor:
 
     def calculate_category_ratios(self, df: pd.DataFrame, save_path: Optional[Path] = None) -> pd.DataFrame:
         df = df.copy()
-        df = df[df["Annotation"] != "hypothetical_protein"]
         df["Category"] = self.categorize_annotations(df["Annotation"])
         counts = df.groupby(["id", "Category"]).size().unstack(fill_value=0)
         ratios = counts.div(counts.sum(axis=1), axis=0).round(4)
@@ -146,23 +124,13 @@ class PhavipFeatureExtractor:
             result.to_csv(save_path, sep=';', index=False)
         return result
 
-    @staticmethod
-    def merge_features(hypo_df: pd.DataFrame, category_df: pd.DataFrame, save_path: Optional[Path] = None) -> pd.DataFrame:
-        merged = hypo_df.merge(category_df, on="id", how="outer").fillna(0)
-        if save_path:
-            merged.to_csv(save_path, sep=';', index=False)
-        return merged
-
     def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
         out_root.mkdir(parents=True, exist_ok=True)
         df = self.load_file(in_root)
-        df["label"] = self.extract_labels(df["id"])
-        raw_df = df.copy()
-        hypo_df = self.calculate_hypo_ratios(raw_df)
-        filtered_df = self.preprocess(df.copy())
+        df = df.copy()
+        filtered_df = self.preprocess(df)
         category_df = self.calculate_category_ratios(filtered_df)
-        final_df = self.merge_features(hypo_df, category_df)
         out_path = out_root / f"{in_root.stem[:3]}_PHV_FEAT.csv"
-        final_df.to_csv(out_path, sep=';', index=False)
-        return final_df
+        category_df.to_csv(out_path, sep=';', index=False)
+        return category_df
         
