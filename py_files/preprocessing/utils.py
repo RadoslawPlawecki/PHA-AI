@@ -1,0 +1,38 @@
+"""
+@author: Radosław Pławecki
+"""
+
+import pandas as pd
+
+def format_accession(prefix: str, column: pd.Series) -> pd.Series:
+        return prefix + "|" + column.str.replace(r'k_', 'k', regex=False)
+
+
+def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
+    if lineage_type:
+        rename_map = {
+            "d": f"{lineage_type}_domain",
+            "p": f"{lineage_type}_phylum",
+            "c": f"{lineage_type}_class",
+            "o": f"{lineage_type}_order",
+            "f": f"{lineage_type}_family",
+            "g": f"{lineage_type}_genus",
+            "s": f"{lineage_type}_species"
+        }
+    else:
+        rename_map = {
+        "d": "domain",
+        "p": "phylum",
+        "c": "class",
+        "o": "order",
+        "f": "family",
+        "g": "genus",
+        "s": "species"
+    }
+    expanded = df[col].apply(
+        lambda x: dict(item.split("__", 1) for item in x.split(";") if "__" in item)
+    ).apply(pd.Series)
+    if rename:
+        expanded = expanded.rename(columns=rename_map)
+    return pd.concat([df, expanded], axis=1)
+    
