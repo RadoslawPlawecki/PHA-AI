@@ -21,9 +21,10 @@ class PhagcnFeatureExtractor:
         df["Accession"] = format_accession(gtool_id, df["Accession"])
         return df
 
-    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+    def preprocess(self, df: pd.DataFrame, out_path: Optional[str] = None) -> pd.DataFrame:
         df = df.copy()
         df = df[df["Prokaryotic virus (Bacteriophages and Archaeal virus)"] == "Y"]
+        df = df[df["GenusCluster"] == "known_genus"]
         df = df[
             df["PhaGCNScore"]
             .str.split(";")
@@ -39,13 +40,15 @@ class PhagcnFeatureExtractor:
         )
         df = pd.concat([df, split_lineage], axis=1)
         df = df[['Accession', 'genus', 'species']]
+        if out_path:
+            df.to_csv(out_path, sep=';', index=False)
         return df
 
     def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
         out_root.mkdir(parents=True, exist_ok=True)
         df = self.load_file(in_root)
         df = df.copy()
-        filtered_df = self.preprocess(df)
+        filtered_df = self.preprocess(df, out_path=f"data/modalities/preprocessed/phagcn/{in_root.stem[:3]}_ChV_PGN_M_PP.csv")
         final_df = self._get_feat(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_PGN_FEAT.csv"
         final_df.to_csv(out_path, sep=';', index=False)
@@ -63,7 +66,7 @@ class PhagcnFeatureExtractor:
                 choices=selectable_columns
             ).ask()
             print(f"\n[INFO] Selected column: {col}")
-        return self._build_matrix(df, feature_col=col, id_col='id', binary=False)
+        return self._build_matrix(df, feature_col=col, id_col='id', binary=True)
 
     def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True) -> pd.DataFrame:
         matrix = pd.crosstab(df[feature_col], df[id_col])
