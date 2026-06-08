@@ -24,7 +24,6 @@ class PhagcnFeatureExtractor:
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df = df[df["Prokaryotic virus (Bacteriophages and Archaeal virus)"] == "Y"]
-        df = df[df["GenusCluster"] == "known_genus"]
         df = df[
             df["PhaGCNScore"]
             .str.split(";")
@@ -64,12 +63,13 @@ class PhagcnFeatureExtractor:
                 choices=selectable_columns
             ).ask()
             print(f"\n[INFO] Selected column: {col}")
-        return self._build_matrix(df, feature_col=col, id_col='id')
+        return self._build_matrix(df, feature_col=col, id_col='id', binary=False)
 
-    def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str) -> pd.DataFrame:
-        binary_matrix = pd.crosstab(df[feature_col], df[id_col])
-        binary_matrix = (binary_matrix > 0).astype(int)
-        vc_mask = binary_matrix.sum(axis=1) >= self.min_patients
-        df_out = binary_matrix[vc_mask].T
-        return df_out
+    def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True) -> pd.DataFrame:
+        matrix = pd.crosstab(df[feature_col], df[id_col])
+        if binary:
+            matrix = (matrix > 0).astype(int)
+        vc_mask = matrix.sum(axis=0) >= self.min_patients
+        matrix = matrix.loc[:, vc_mask].T
+        return matrix.reset_index()
         
