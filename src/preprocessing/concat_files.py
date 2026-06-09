@@ -5,9 +5,6 @@
 from pathlib import Path
 import pandas as pd
 
-# in_root = Path("data/modalities/raw")
-# out_root = Path("data/modalities/raw-merged")
-
 
 def merge_tsvs(in_root: Path, out_root: Path):
     for ptool_dir in in_root.iterdir():
@@ -34,3 +31,8 @@ def merge_tsvs(in_root: Path, out_root: Path):
             print(f"\nPTool: {ptool_dir.name} | GTool: {gtool_dir.name}")
             print(merged.shape)
             print(merged.head())
+
+
+"""in_root = Path("data/modalities/raw")
+out_root = Path("data/modalities/raw-merged")
+merge_tsvs(in_root=in_root, out_root=out_root)"""

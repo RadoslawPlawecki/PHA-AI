@@ -7,6 +7,7 @@ if [[ -z "$tool" ]]; then
   echo "Example: $0 cherry"
   echo "Example: $0 phagcn"
   echo "Example: $0 phavip"
+  echo "Example: $0 iphop"
   exit 1
 fi
 
@@ -47,6 +48,14 @@ elif [[ "$tool" == "phavip" ]]; then
     Annotation
   )
 
+elif [[ "$tool" == "iphop" ]]; then
+  in_file="data/modalities/preprocessed/iphop/geN_ChV_IPH_M_PP.csv"
+  out_file="data/results/sml/rf/iphop/geN_PHV_RF.csv"
+
+  columns=(
+    genus
+  )
+
 else
   echo "Unknown tool: $tool"
   exit 1
@@ -57,7 +66,7 @@ for column in "${columns[@]}"; do
 
     echo "[$tool] Running with --column=$column --min_patients=$min_patients"
 
-    python -m project.py_files.pipelines.sml.main \
+    python -m project.src.pipelines.sml.main \
       --in_file "$in_file" \
       --out_file "$out_file" \
       --column "$column" \
