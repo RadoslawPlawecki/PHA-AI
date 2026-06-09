@@ -69,10 +69,10 @@ class PhagcnFeatureExtractor:
         return self._build_matrix(df, feature_col=col, id_col='id', binary=True)
 
     def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True) -> pd.DataFrame:
-        matrix = pd.crosstab(df[feature_col], df[id_col])
+        matrix = pd.crosstab(df[id_col], df[feature_col])
         if binary:
             matrix = (matrix > 0).astype(int)
         vc_mask = matrix.sum(axis=0) >= self.min_patients
-        matrix = matrix.loc[:, vc_mask].T
+        matrix = matrix.loc[:, vc_mask]
         return matrix.reset_index()
         
