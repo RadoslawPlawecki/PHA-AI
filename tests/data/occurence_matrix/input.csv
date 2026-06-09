@@ -1,0 +1,9 @@
+id,feature,Accession,genus,Confidence score
+P1,F1,V1,G1,10
+P1,F2,V1,G2,30
+P1,F1,V2,G1,20
+P2,F1,V1,G1,10
+P2,F3,V3,G2,40
+P3,F2,V2,G1,20
+P3,F2,V2,G2,20
+P3,F3,V3,G2,60

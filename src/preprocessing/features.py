@@ -12,6 +12,7 @@ def build_matrix(df: pd.DataFrame, feature_col: str, id_col: str, binary: bool =
             matrix = (matrix > 0).astype(int)
         vc_mask = matrix.sum(axis=0) >= min_patients
         matrix = matrix.loc[:, vc_mask]
+        matrix.columns.name = None
         return matrix.reset_index()
 
 
@@ -26,4 +27,5 @@ def calculate_predation_pressure(df: pd.DataFrame, min_patients: int = 2) -> pd.
         C = A.dot(B)
         mask = (C > 0).sum(axis=0) >= min_patients
         C = C.loc[:, mask]
+        C.columns.name = None
         return C.reset_index().rename(columns={'index': 'id', 'row_0': 'id'})
