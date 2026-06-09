@@ -7,6 +7,7 @@ import re
 import questionary
 from pathlib import Path
 from typing import Optional
+from ..utils import *
 
 class PhagcnFeatureExtractor:
     def __init__(self, min_phagcn_score=0.9, min_patients=2):
@@ -15,7 +16,6 @@ class PhagcnFeatureExtractor:
             self.min_patients = min_patients
         
     def load_file(self, path: Path) -> pd.DataFrame:
-        from ..utils import format_accession
         df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
         gtool_id = path.stem.split('_')[0]
         df["Accession"] = format_accession(gtool_id, df["Accession"])
@@ -66,13 +66,5 @@ class PhagcnFeatureExtractor:
                 choices=selectable_columns
             ).ask()
             print(f"\n[INFO] Selected column: {col}")
-        return self._build_matrix(df, feature_col=col, id_col='id', binary=True)
-
-    def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True) -> pd.DataFrame:
-        matrix = pd.crosstab(df[id_col], df[feature_col])
-        if binary:
-            matrix = (matrix > 0).astype(int)
-        vc_mask = matrix.sum(axis=0) >= self.min_patients
-        matrix = matrix.loc[:, vc_mask]
-        return matrix.reset_index()
+        return build_matrix(df, feature_col=col, id_col='id', binary=True, min_patients=self.min_patients)
         

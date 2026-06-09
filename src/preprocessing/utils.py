@@ -3,12 +3,13 @@
 """
 
 import pandas as pd
+from typing import Optional
 
 def format_accession(prefix: str, column: pd.Series) -> pd.Series:
         return prefix + "|" + column.str.replace(r'k_', 'k', regex=False)
 
 
-def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
+def split_taxonomy(df: pd.DataFrame, col: str = "lineage", rename: bool = True, lineage_type: Optional[str] = None):
     if lineage_type:
         rename_map = {
             "d": f"{lineage_type}_domain",
@@ -35,4 +36,3 @@ def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
     if rename:
         expanded = expanded.rename(columns=rename_map)
     return pd.concat([df, expanded], axis=1)
-    
