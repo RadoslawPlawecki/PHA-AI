@@ -39,36 +39,6 @@ def split_taxonomy(df, col="lineage", rename=True, lineage_type=None):
     return pd.concat([df, expanded], axis=1)
 
 
-# ----- PHAGCN FILES PREPROCESSING
-"""in_root = Path("data/modalities/raw-merged/phagcn")
-out_root = Path("data/modalities/preprocessed/phagcn")
-
-for file in in_root.iterdir():
-    df = pd.read_csv(file, delimiter=';')
-    gtool_id = parts = file.stem.split('_')[0]
-    df["Accession"] = format_accession(gtool_id, df["Accession"])
-    df = df[df["Prokaryotic virus (Bacteriophages and Archaeal virus)"] == "Y"]
-    df = df[df["GenusCluster"] == "known_genus"]
-    df = df[
-        df["PhaGCNScore"]
-        .str.split(";")
-        .str[1]
-        .astype(float) >= 0.9
-    ]
-    split_lineage = (
-        df["Lineage"]
-        .str.split(";")
-        .explode()
-        .str.split(":", n=1, expand=True)
-        .pivot(columns=0, values=1)
-    )
-    df = pd.concat([df, split_lineage], axis=1)
-    df = df[['Accession', 'genus', 'species']]
-    out_root.mkdir(parents=True, exist_ok=True)
-    out_path = out_root / f"{file.stem}_PP.csv"
-    df.to_csv(out_path, sep=';', index=False)"""
-
-
 # ----- CHERRY FILES PREPROCESSING
 """in_root = Path("data/modalities/raw-merged/cherry")
 out_root = Path("data/modalities/preprocessed/cherry")
