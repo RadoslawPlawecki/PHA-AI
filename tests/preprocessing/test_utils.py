@@ -4,7 +4,6 @@
 
 import pandas as pd
 import pytest
-
 from preprocessing.utils import format_accession, split_taxonomy
 
 
