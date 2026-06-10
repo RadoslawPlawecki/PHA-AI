@@ -3,104 +3,56 @@
 """
 
 import pandas as pd
-import questionary
-import os
+import numpy as np
+import csv
+from collections import Counter
+from pathlib import Path
 
 
 class DataLoader:
-    AVAILABLE_TOOLS = {"vcontact2", "cherry", "phagcn", "phavip", "iphop"}
+    def __init__(self, input_path: str, logger=None):
+        self.input_path = Path(input_path)
+        self.logger = logger
+        if not self.input_path.is_file():
+            raise FileNotFoundError(f"Input file not found: {self.input_path}")
 
-    def __init__(
-        self, 
-        input_path: str, 
-        min_patients: int = 2, 
-        tool: str | None = None, 
-        output_path: str | None = None
-    ):
-        if not os.path.exists(input_path):
-            raise FileNotFoundError(f"Input file not found: {input_path}.")
-        if tool not in self.AVAILABLE_TOOLS:
-            raise ValueError(
-                f"Unknown data from tool: {tool}. "
-                f"Available tools: {', '.join(self.AVAILABLE_TOOLS)}"
-            )
-        if min_patients <= 0:
-            raise ValueError("min_patients must be greater than 0.")
-        
-        self.input_path = input_path
-        self.output_path = output_path
-        self.tool = tool
-        self.min_patients = min_patients
+    def load(self):
+        with open(self.input_path, newline="") as f:
+            sample = f.read(4096)
+            dialect = csv.Sniffer().sniff(sample)
+        df = pd.read_csv(self.input_path, sep=dialect.delimiter)
+        sample_ids = pd.to_numeric(df['id'].str.extract(r'\|S(\d+)')[0], errors='coerce')
+        y = (sample_ids <= 34).to_numpy(dtype=int)
+        X = df.drop(columns=['id', 'label'], errors="ignore")
+        X = X.apply(pd.to_numeric, errors="coerce")
+        self._log_load(X=X, y=y)
+        return X, y
 
-    def process(self, col=None):
-        """Method to route to the specific tool processor and return features/labels."""
-        if self.tool == "vcontact2":
-            df = self._process_vcontact2()
+    def _log_load(self, X: pd.DataFrame, y: np.ndarray) -> None:
+        counts = Counter(y)
+        total = len(y)
+        msg1 = f"Dataset loaded: {self.input_path}"
+        msg2 = f"Samples: {total}"
+        msg3 = f"Features: {X.shape[1]}"
+        msg4 = "Class distribution:"
+        class_lines = []
+        for cls, count in sorted(counts.items()):
+            pct = 100 * count / total
+            class_lines.append(f"       class {cls}: {count} ({pct:.1f}%)")
+        msg6 = f"Missing values: {int(X.isna().sum().sum())}"
+        if self.logger:
+            self.logger.info(msg1)
+            self.logger.info(msg2)
+            self.logger.info(msg3)
+            self.logger.info(msg4)
+            for line in class_lines:
+                self.logger.info(line)
+            self.logger.info(msg6)
         else:
-            df = self._process_generic(col)
-
-        sample_ids = df.index.astype(str).str.extract(r'\|S(\d+)')[0]
-        sample_ids = pd.to_numeric(sample_ids, errors='coerce')
-        
-        y = (sample_ids <= 34).astype(int).values
-        X = df.drop(columns=['label'], errors='ignore')
-        
-        return X.values, y, X.columns
-
-    def _process_vcontact2(self) -> pd.DataFrame:
-        """Method to handle processing for vContact2 data."""
-        df = pd.read_csv(self.input_path)
-        self._log_load(df)
-        
-        df.columns = ['Genome', 'Order', 'Family', 'Genus', 'preVC', 'Status', 'VC'] + list(df.columns[7:])
-        
-        allowed_statuses = ['Clustered', 'Clustered/Singleton']
-        df_filtered = df[df['Status'].isin(allowed_statuses)].copy()
-        df_filtered = df_filtered[df_filtered['Genome'].str.match(r'^[^|]+\|S\d+_', na=False)]
-        
-        if df_filtered.empty:
-            raise ValueError("No records after filtering.")
+            print(msg1)
+            print(msg2)
+            print(msg3)
+            print(msg4)
+            print("\n".join(class_lines))
+            print(msg6)
             
-        df_filtered['id'] = df_filtered['Genome'].str.split('_').str[0]
-        
-        return self._build_matrix(df_filtered, feature_col='VC', id_col='id')
-
-    def _process_generic(self, col=None) -> pd.DataFrame:
-        """Method to handle processing for tools with identical CSV structures (Cherry, PhageGCN)."""
-        df = pd.read_csv(self.input_path, delimiter=';')
-        self._log_load(df)
-        
-        df = df[df['Accession'].str.match(r'^[^|]+\|S\d+_', na=False)].copy()
-        df['id'] = df['Accession'].str.split('_').str[0]
-        
-        if col is None:
-            selectable_columns = [col for col in df.columns if col not in {'Accession', 'id'}]
-            if not selectable_columns:
-                raise ValueError("No valid columns to choose from.")
-                
-            col = questionary.select(
-                "Choose a column:",
-                choices=selectable_columns
-            ).ask()
-            print(f"\n[INFO] Selected column: {col}")
-            
-        return self._build_matrix(df, feature_col=col, id_col='id')
-
-    def _build_matrix(self, df: pd.DataFrame, feature_col: str, id_col: str) -> pd.DataFrame:
-        """Method to generate the binary cross-tabulation matrix and save it if necessary."""
-        binary_matrix = pd.crosstab(df[feature_col], df[id_col])
-        binary_matrix = (binary_matrix > 0).astype(int)
-        
-        vc_mask = binary_matrix.sum(axis=1) >= self.min_patients
-        df_out = binary_matrix[vc_mask].T
-        
-        if self.output_path:
-            df_out.to_csv(self.output_path)
-            print(f"[SUCCESS] Saved to {self.output_path}")
-            
-        return df_out
-
-    def _log_load(self, df: pd.DataFrame):
-        """Method for consistent logging."""
-        print(f"\n[INFO] {self.input_path}")
-        print(f"[INFO] {len(df)} rows loaded.")

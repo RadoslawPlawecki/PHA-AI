@@ -3,7 +3,6 @@
 """
 
 import pandas as pd
-from typing import Optional
 
 
 def build_matrix(df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True, min_patients: int = 2) -> pd.DataFrame:

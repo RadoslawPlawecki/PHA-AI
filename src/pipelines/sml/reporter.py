@@ -4,17 +4,13 @@
 
 
 def format_metric(metric):
-
     score = metric["score"]
-
     if "ci" in metric:
         ci = metric["ci"]
-
         return (
             f"{score:.3f} "
             f"(95% CI: {ci['lower']:.3f}–{ci['upper']:.3f})"
         )
-
     return f"{score:.3f}"
 
 
@@ -45,8 +41,6 @@ def format_confusion_matrix(cm):
 def format_top_features(importances, feature_names, k=10, title="Top Features"):
     lines = [f"\n=== {title} ==="]
     idx = importances.argsort()[-k:][::-1]
-
     for i, j in enumerate(idx, 1):
         lines.append(f"{i:>2}. {feature_names[j]:<15} | {importances[j]:.4f}")
-
     return "\n".join(lines)

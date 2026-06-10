@@ -4,6 +4,7 @@
 
 from ..common.logger import setup_logger
 from ..common.data_loader import DataLoader
+from ..common.preprocessor import NearZeroVarianceFilter
 from .analyze_fisher import FisherAnalyzer
 from .models import *
 from .validators import *
@@ -20,14 +21,10 @@ from tqdm import tqdm
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Classifier")
+    parser = argparse.ArgumentParser(description="Single-Omic Allergy Classifier")
 
     parser.add_argument("--in_file", type=str, required=True, help="Direct path to an input file")
     parser.add_argument("--out_file", type=str, default=None, help="Direct path to an output file")
-    parser.add_argument("--tool", type=str, default=None, help="Type of tool the data comes from")
-    parser.add_argument("--column", type=str, default=None, help="Column with data selected as features")
-
-    parser.add_argument("--min_patients", type=int, default=2, help="Number of patients sharing the same viral cluster (VC).")
 
     parser.add_argument("--run_fisher", action="store_true", help="Run Fisher's Exact Test")
     parser.add_argument("--run_loocv", action="store_true", help="Run Leave-One-Out CV")
@@ -58,34 +55,22 @@ def log_experiment_results(results, feature_names, importance_key, logger):
 
 def main():
     args = parse_args()
-
-    logger = setup_logger(f'{args.tool}_mP{args.min_patients}_{args.column}')
-
+    logger = setup_logger()
     logger.info("=== START EXPERIMENT ===")
-
-    logger.info("Loading data...")
-    loader = DataLoader(
-        input_path=args.in_file, 
-        min_patients=args.min_patients,
-        tool=args.tool
-    )
-    X, y, feature_names = loader.process(col=args.column)
-    
-    logger.info(f"Data shape: {X.shape[0]} samples, {X.shape[1]} features")
-
+    loader = DataLoader(input_path=args.in_file, logger=logger)
+    X, labels = loader.load()
+    nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=8e-5)
+    values, feature_names = nzv_filter.fit_transform(X)
     if args.run_fisher:
         logger.info("Running Fisher's Exact Test...")
         fisher = FisherAnalyzer()
-
-        significant = fisher.run(X, y, feature_names)
-
+        significant = fisher.run(values, labels, feature_names)
         if not significant:
             logger.info("No significant features found (after FDR).")
         else:
             logger.info("Significant features:")
             for name, p in significant:
                 logger.info(f"{name} | p={p:.4e}")
-
     if args.model_type == "rf":
         logger.info("Initializing Random Forest...")
         model = get_rf_model(use_smote=args.use_smote)
@@ -95,19 +80,16 @@ def main():
     elif args.model_type == "catboost":
         logger.info("Initializing CatBoost...")
         model = get_catboost_model(use_smote=args.use_smote)
-
     if args.run_loocv:
         logger.info(f"--- LOOCV {args.model_type.upper()} ---")
-        results_loocv = LOOCVValidator(verbose=True).run(model, X, y)
+        results_loocv = LOOCVValidator(verbose=True).run(model, values, labels)
         metrics = log_experiment_results(results_loocv, feature_names, "feature_importances", logger)
-        CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'loocv_mP{args.min_patients}_{args.column}', metrics=metrics)
-
+        # CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'loocv_mP{args.min_patients}_{args.column}', metrics=metrics)
     if args.run_repeated:
         logger.info(f"--- REPEATED CV {args.model_type.upper()} ---")
-        results_rep = RepeatedCVValidator(verbose=True).run(model, X, y)
+        results_rep = RepeatedCVValidator(verbose=True).run(model, values, labels)
         metrics = log_experiment_results(results_rep, feature_names, "perm_importances", logger)
-        CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'rcv_mP{args.min_patients}_{args.column}', metrics=metrics)
-
+        # CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'rcv_mP{args.min_patients}_{args.column}', metrics=metrics)
     logger.info("=== END EXPERIMENT ===")
 
 

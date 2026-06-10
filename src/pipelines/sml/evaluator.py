@@ -28,7 +28,6 @@ class Evaluator:
         "mcc": lambda yt, yp, ypb: matthews_corrcoef(yt, yp),
         "geometric_mean": lambda yt, yp, ypb: geometric_mean_score(yt, yp),
     }
-
     CI_METRICS = {
         "roc_auc",
         "balanced_accuracy",
@@ -39,15 +38,11 @@ class Evaluator:
     @staticmethod
     def evaluate(y_true, y_pred, y_prob):
         results = {}
-
         for name, metric_fn in Evaluator.METRICS.items():
-
             score = metric_fn(y_true, y_pred, y_prob)
-
             metric_result = {
                 "score": score
             }
-
             if name in Evaluator.CI_METRICS:
                 metric_result["ci"] = BootstrapCI.compute(
                     y_true,
@@ -55,32 +50,21 @@ class Evaluator:
                     y_prob,
                     metric_fn
                 )
-
             results[name] = metric_result
-
-        tn, fp, fn, tp = confusion_matrix(
-            y_true,
-            y_pred,
-            labels=[0, 1]
-        ).ravel()
-
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
         results["specificity"] = {
             "score": tn / (tn + fp) if (tn + fp) > 0 else 0.0
         }
-
         results["sensitivity"] = {
             "score": results["recall"]["score"]
         }
-
         results["npv"] = {
             "score": tn / (tn + fn) if (tn + fn) > 0 else 0.0
         }
-
         results["confusion_matrix"] = {
             "TP": int(tp),
             "TN": int(tn),
             "FP": int(fp),
             "FN": int(fn),
         }
-
         return results
