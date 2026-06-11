@@ -2,20 +2,17 @@
 @author: Radosław Pławecki
 """
 
-from ..common.logger import setup_logger
-from ..common.data_loader import DataLoader
-from ..common.preprocessor import NearZeroVarianceFilter
-from .analyze_fisher import FisherAnalyzer
-from .models import *
-from .validators import *
-from .reporter import (
-    format_metrics,
-    format_confusion_matrix,
-    format_top_features
-)
+from .utils.logger import setup_logger
+from ml.data_loader import DataLoader
+from ml.preprocessor import NearZeroVarianceFilter
+from .fisher_analyzer import FisherAnalyzer
+from .models import SingleOmicModel, get_rf_model, get_catboost_model, get_xgb_model
+from .validators import LOOCVValidator, RepeatedCVValidator, CVResults
+from .utils.reporter import ReportFormatter
 from .evaluator import Evaluator
-from .csv_reporter import CSVReporter
+from .utils.csv_reporter import CSVReporter
 import os
+import pandas as pd
 import argparse
 from tqdm import tqdm
 
@@ -36,29 +33,23 @@ def parse_args():
     return parser.parse_args()
 
 
-def log_experiment_results(results, feature_names, importance_key, logger):
-    metrics = Evaluator.evaluate(
-        results["y_true"],
-        results["y_pred"],
-        results["y_prob"]
-    )
-    logger.info(format_metrics(metrics))
-    logger.info(format_confusion_matrix(metrics["confusion_matrix"]))
-    logger.info(
-        format_top_features(
-            results[importance_key],
-            feature_names
-        )
-    )
+def log_experiment_results(results: CVResults, feature_names: list, sample_ids: pd.Series, logger):
+    metrics = Evaluator.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
+    logger.info(ReportFormatter.format_metrics(metrics))
+    logger.info(ReportFormatter.format_confusion_matrix(metrics["confusion_matrix"]))
+    logger.info(ReportFormatter.format_misclassified_samples(
+        results.y_true, results.y_pred, results.test_idx, sample_ids
+    ))
+    logger.info(ReportFormatter.format_top_features(results.importance_mean, feature_names))
     return metrics
 
 
 def main():
     args = parse_args()
-    logger = setup_logger()
-    logger.info("=== START EXPERIMENT ===")
+    logger = setup_logger('soac')
+    logger.info("=== SINGLE-OMIC ALLERGY CLASSIFIER ===")
     loader = DataLoader(input_path=args.in_file, logger=logger)
-    X, labels = loader.load()
+    X, labels, sample_ids = loader.load()
     nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=8e-5)
     values, feature_names = nzv_filter.fit_transform(X)
     if args.run_fisher:
@@ -71,24 +62,22 @@ def main():
             logger.info("Significant features:")
             for name, p in significant:
                 logger.info(f"{name} | p={p:.4e}")
-    if args.model_type == "rf":
-        logger.info("Initializing Random Forest...")
-        model = get_rf_model(use_smote=args.use_smote)
-    elif args.model_type == "xgb":
-        logger.info("Initializing XGBoost...")
-        model = get_xgb_model(use_smote=args.use_smote)
-    elif args.model_type == "catboost":
-        logger.info("Initializing CatBoost...")
-        model = get_catboost_model(use_smote=args.use_smote)
+    model_factories = {
+        "rf": get_rf_model,
+        "xgb": get_xgb_model,
+        "catboost": get_catboost_model
+    }
+    logger.info(f"Initializing {args.model_type.upper()}...")
+    model = model_factories[args.model_type](use_smote=args.use_smote)
     if args.run_loocv:
-        logger.info(f"--- LOOCV {args.model_type.upper()} ---")
+        logger.info(f"--- SINGLE-OMIC LOOCV i ---")
         results_loocv = LOOCVValidator(verbose=True).run(model, values, labels)
-        metrics = log_experiment_results(results_loocv, feature_names, "feature_importances", logger)
+        metrics = log_experiment_results(results_loocv, feature_names, sample_ids, logger)
         # CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'loocv_mP{args.min_patients}_{args.column}', metrics=metrics)
     if args.run_repeated:
-        logger.info(f"--- REPEATED CV {args.model_type.upper()} ---")
+        logger.info(f"--- SINGLE-OMIC REPEATED CV {args.model_type.upper()} ---")
         results_rep = RepeatedCVValidator(verbose=True).run(model, values, labels)
-        metrics = log_experiment_results(results_rep, feature_names, "perm_importances", logger)
+        metrics = log_experiment_results(results_rep, feature_names, sample_ids, logger)
         # CSVReporter.save_metrics(filepath=args.out_file, experiment_name=f'rcv_mP{args.min_patients}_{args.column}', metrics=metrics)
     logger.info("=== END EXPERIMENT ===")
 

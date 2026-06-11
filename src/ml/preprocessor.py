@@ -11,14 +11,23 @@ class NearZeroVarianceFilter:
         self.threshold = threshold
         self.logger = logger
 
-    def fit_transform(self, X: pd.DataFrame):
-        values, feature_names = X.values, X.columns
-        mask = values.var(axis=0) > self.threshold
+    def fit(self, X: pd.DataFrame):
+        values = X.values
+        self.mask_ = values.var(axis=0) > self.threshold
+        self.feature_names_ = X.columns[self.mask_]
         n_before = values.shape[1]
-        n_after = mask.sum()
+        n_after = self.mask_.sum()
         n_removed = n_before - n_after
-        self._log_filtering(X, mask, n_before, n_after, n_removed)
-        return values[:, mask], feature_names[mask]
+        self._log_filtering(X, self.mask_, n_before, n_after, n_removed)
+        return self
+
+    def transform(self, X: pd.DataFrame):
+        if self.mask_ is None:
+            raise ValueError("Filter must be fitted before calling transform().")
+        return X.values[:, self.mask_], self.feature_names_
+
+    def fit_transform(self, X: pd.DataFrame):
+        return self.fit(X).transform(X)
 
     def _log_filtering(self, X, mask, n_before: int, n_after: int, n_removed: int) -> None:
         msg1 = f"Near-zero variance filter (threshold={self.threshold:g})"

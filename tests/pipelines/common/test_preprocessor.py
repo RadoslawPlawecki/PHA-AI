@@ -3,13 +3,13 @@
 """
 
 import pandas as pd
-from pipelines.common.data_loader import DataLoader 
-from pipelines.common.preprocessor import NearZeroVarianceFilter 
+from ml.data_loader import DataLoader 
+from ml.preprocessor import NearZeroVarianceFilter 
 
 
 def test_near_zero_variance_filter_features_removed():
     loader = DataLoader("project/tests/data/features/001_input.csv")
-    X, _ = loader.load()
+    X, _, _ = loader.load()
     filt = NearZeroVarianceFilter(threshold=0.0)
     X, cols = filt.fit_transform(X)
     assert X.shape == (5, 3)
@@ -19,7 +19,7 @@ def test_near_zero_variance_filter_features_removed():
 
 def test_near_zero_variance_filter_no_features_removed():
     loader = DataLoader("project/tests/data/features/002_input.csv")
-    X, _ = loader.load()
+    X, _, _ = loader.load()
     filt = NearZeroVarianceFilter(threshold=0.0)
     X, cols = filt.fit_transform(X)
     assert X.shape == (5, 4)

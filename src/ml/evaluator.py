@@ -13,7 +13,7 @@ from sklearn.metrics import (
     matthews_corrcoef
 )
 from imblearn.metrics import geometric_mean_score
-from .bookstrap_ci import BootstrapCI
+from .utils.bookstrap_ci import BootstrapCI
 import numpy as np
 
 
@@ -36,7 +36,7 @@ class Evaluator:
 
 
     @staticmethod
-    def evaluate(y_true, y_pred, y_prob):
+    def evaluate(y_true, y_pred, y_prob, test_idx):
         results = {}
         for name, metric_fn in Evaluator.METRICS.items():
             score = metric_fn(y_true, y_pred, y_prob)
@@ -67,4 +67,15 @@ class Evaluator:
             "FP": int(fp),
             "FN": int(fn),
         }
+        if test_idx is not None:
+            fp_local = np.where((y_true == 0) & (y_pred == 1))[0]
+            fn_local = np.where((y_true == 1) & (y_pred == 0))[0]
+            fp_idx = test_idx[fp_local].tolist()
+            fn_idx = test_idx[fn_local].tolist()
+            results["misclassified"] = {
+                "fp": fp_idx,
+                "fn": fn_idx,
+            }
+        else:
+            results["misclassified"] = None
         return results
