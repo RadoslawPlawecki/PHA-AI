@@ -1,12 +1,21 @@
 #!/bin/bash
 
-in_file="data/modalities/features/phavip/VS2_PHV_FEAT.csv"
-# out_file="data/ml/sml/rf/cherry/VS2_CHR_RF.csv"
+out_file="data/ml/sml/SML_RF.csv"
 
-python -m project.src.ml.sml \
-  --in_file "$in_file" \
-  --run_fisher \
-  --run_loocv \
-  --run_repeated \
-  --use_smote \
-  --model_type catboost
+modalities=(comp host func)
+gtools=(geN VIB VS2)
+
+for gtool in "${gtools[@]}"; do
+  for modality in "${modalities[@]}"; do
+        echo "Running modality=${modality}, gtool=${gtool}"
+        python -m project.src.ml.sml \
+            --modality "$modality" \
+            --gtool "$gtool" \
+            --out_file "$out_file" \
+            --run_fisher \
+            --run_loocv \
+            --run_repeated \
+            --use_smote \
+            --model_type rf
+    done
+done

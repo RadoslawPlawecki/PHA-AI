@@ -61,10 +61,10 @@ for i, sample_group in enumerate(groups):
     ax.tick_params(axis='x', rotation=45, labelsize=12)
     ax.get_legend().remove()
 
-fig.suptitle(r'\textbf{Number of assembled genomes}', fontsize=16, y=0.96)
+fig.suptitle(r'\textbf{Number of putative viral genomes}', fontsize=16, y=0.96)
 
 for ax in axes:
-    ax.set_ylabel('Number of assembled genomes', fontsize=14, labelpad=10)
+    ax.set_ylabel('Number of putative viral genomes', fontsize=14, labelpad=10)
     ax.set_xlabel('Sample', fontsize=14, labelpad=10)
     ax.grid(axis='y', linestyle='--', alpha=0.5, zorder=0)
     ax.set_axisbelow(True)
