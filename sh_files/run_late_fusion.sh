@@ -1,8 +1,8 @@
 #!/bin/bash
 
-comp="data/modalities/features/phagcn/geN_PGN_FEAT.csv"
-host="data/modalities/features/iphop/geN_IPH_FEAT.csv"
-func="data/modalities/features/phavip/geN_PHV_FEAT.csv"
+comp="data/modalities/features/phagcn/VIB_PGN_FEAT.csv"
+host="data/modalities/features/iphop/VIB_IPH_FEAT.csv"
+func="data/modalities/features/phavip/VIB_PHV_FEAT.csv"
 # out_file="data/ml/sml/rf/cherry/VS2_CHR_RF.csv"
 
 python -m project.src.ml.late_fusion \

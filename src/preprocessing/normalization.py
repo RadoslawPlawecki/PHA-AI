@@ -38,10 +38,8 @@ def _tss(X: pd.DataFrame) -> pd.DataFrame:
 def _clr(X: pd.DataFrame) -> pd.DataFrame:
     pseudocount = 1e-6
     X_pseudo = X.replace(0, pseudocount)
-
     log_X = np.log(X_pseudo)
     geom_means = np.exp(log_X.mean(axis=1))
-
     return np.log(X_pseudo.div(geom_means, axis=0))
 
 

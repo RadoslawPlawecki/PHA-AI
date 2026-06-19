@@ -1,0 +1,8 @@
+Genome;ORF;coverage;pident;Annotation
+S10;orf1;0.9;40;capsid head protein
+S10;orf2;0.85;50;terminase large subunit
+S10;orf3;0.8;60;holin family protein
+S10;orf4;0.95;70;hypothetical protein
+S40;orf5;0.9;80;DNA polymerase helicase
+S40;orf6;0.92;90;transcriptional regulator sigma factor
+S40;orf7;0.88;85;toxin antitoxin system

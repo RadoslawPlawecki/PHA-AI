@@ -28,7 +28,7 @@ class SingleOmicConfig:
         parser = argparse.ArgumentParser(description="Single-Omic Allergy Classifier")
         parser.add_argument("--in_file", type=str, default=None)
         parser.add_argument("--modality", choices=["comp", "host", "func"])
-        parser.add_argument("--gtool", choices=["geN", "VIB", "VS2"])
+        parser.add_argument("--gtool", choices=["geN", "VIB", "VS2", "ALL"])
         parser.add_argument("--out_file", type=str, default=None)
         parser.add_argument("--run_fisher", action="store_true")
         parser.add_argument("--run_loocv", action="store_true")

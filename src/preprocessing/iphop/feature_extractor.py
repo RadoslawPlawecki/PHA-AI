@@ -46,6 +46,9 @@ class IphopFeatureExtractor:
 
     def _get_feat(self, df: pd.DataFrame, col: Optional[str] = None) -> pd.DataFrame:
         feature_method = ask_feature_method()
-        norm_method = ask_normalization_method()
+        if not feature_method.startswith("1"):
+            norm_method = "4) Nothing (raw data) [raw]"  # no normalization, if occurence matrix as a feature
+        else:
+            norm_method = ask_normalization_method()
         return build_features(df=df, min_patients=self.min_patients, feature_method=feature_method, norm_method=norm_method)
         

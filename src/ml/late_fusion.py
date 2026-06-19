@@ -61,7 +61,7 @@ def main():
     custom_weights = {
         "comp": 0.5,      
         "func": 1.0,     
-        "host": 0.3     
+        "host": 0.4     
     }
     fusion_models = {}
     X_data = {}

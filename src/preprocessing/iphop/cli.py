@@ -13,7 +13,6 @@ def ask_feature_method() -> str:
             "2) Occurrence Matrix [om]",
         ],
     ).ask()
-
     print(f"\n[INFO] Selected feature engineering method: {method}")
     return method
 
@@ -28,6 +27,5 @@ def ask_normalization_method() -> str:
             "4) Nothing (raw data) [raw]",
         ],
     ).ask()
-
     print(f"[INFO] Selected normalization: {method}")
     return method

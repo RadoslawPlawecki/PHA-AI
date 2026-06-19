@@ -7,13 +7,15 @@ import re
 import questionary
 from pathlib import Path
 from typing import Optional
-from ..utils import *
+from .build_features import build_features
+from ..utils import format_accession, split_taxonomy
+from .cli import ask_column
+
 
 class PhagcnFeatureExtractor:
-    def __init__(self, min_phagcn_score=0.9, min_patients=2):
+    def __init__(self, min_phagcn_score: float = 0.9, min_patients: int = 2):
         self.min_phagcn_score = min_phagcn_score
-        if min_patients > 0:
-            self.min_patients = min_patients
+        self.min_patients = max(1, min_patients)
         
     def load_file(self, path: Path) -> pd.DataFrame:
         df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
@@ -54,17 +56,7 @@ class PhagcnFeatureExtractor:
         final_df.to_csv(out_path, sep=';', index=False)
         return final_df
 
-    def _get_feat(self, df: pd.DataFrame, col: Optional[str] = None) -> pd.DataFrame:
-        df = df[df['Accession'].str.match(r'^[^|]+\|S\d+_', na=False)].copy()
-        df['id'] = df['Accession'].str.split('_').str[0]
-        if col is None:
-            selectable_columns = [col for col in df.columns if col not in {'Accession', 'id'}]
-            if not selectable_columns:
-                raise ValueError("No valid columns to choose from.")
-            col = questionary.select(
-                "Choose a column:",
-                choices=selectable_columns
-            ).ask()
-            print(f"\n[INFO] Selected column: {col}")
-        return build_matrix(df, feature_col=col, id_col='id', binary=True, min_patients=self.min_patients)
+    def _get_feat(self, df: pd.DataFrame) -> pd.DataFrame:
+        col = ask_column(df)
+        return build_features(df=df, feature_col=col, min_patients=self.min_patients)
         

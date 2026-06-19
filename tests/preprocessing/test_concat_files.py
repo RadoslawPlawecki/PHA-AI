@@ -4,7 +4,7 @@
 
 import pandas as pd
 from pathlib import Path
-from preprocessing.concat_files import merge_tsvs
+from preprocessing.concat_files import merge_tsvs, merge_csvs
 
 
 def _create_tsv(path: Path, data: dict):
@@ -70,3 +70,69 @@ def test_ignores_non_dirs(tmp_path):
     in_root.mkdir()
     (in_root / "not_a_dir.txt").write_text("x")
     merge_tsvs(in_root, tmp_path / "out")
+
+
+def make_csv(path: Path, rows):
+    df = pd.DataFrame(rows)
+    df.to_csv(path, index=False, sep=";")
+
+
+def test_merge_single_subdir_multiple_csvs(tmp_path, capsys):
+    subdir = tmp_path / "data"
+    subdir.mkdir()
+    make_csv(subdir / "a_part1.csv", [{"x": 1}, {"x": 2}])
+    make_csv(subdir / "b_part2.csv", [{"x": 3}])
+    merge_csvs(tmp_path)
+    out_files = list(subdir.glob("ALL_*.csv"))
+    assert len(out_files) == 1
+    out_file = out_files[0]
+    df = pd.read_csv(out_file, sep=";")
+    assert len(df) == 3
+    assert list(df["x"]) == [1, 2, 3]
+    captured = capsys.readouterr().out
+    assert "Merged 2 files" in captured
+
+
+def test_merge_skips_non_directory(tmp_path):
+    (tmp_path / "ignore.csv").write_text("x;y\n1;2\n")
+    merge_csvs(tmp_path)
+    assert list(tmp_path.glob("ALL_*.csv")) == []
+
+
+def test_merge_skips_empty_subdir(tmp_path):
+    (tmp_path / "empty").mkdir()
+    merge_csvs(tmp_path)
+    assert list((tmp_path / "empty").glob("ALL_*.csv")) == []
+
+
+def test_output_name_logic(tmp_path):
+    subdir = tmp_path / "data"
+    subdir.mkdir()
+    make_csv(subdir / "prefix_alpha.csv", [{"a": 1}])
+    make_csv(subdir / "prefix_beta.csv", [{"a": 2}])
+    merge_csvs(tmp_path)
+    out_file = next(subdir.glob("ALL_*.csv"))
+    assert out_file.name == "ALL_alpha.csv"
+
+
+def test_files_are_sorted_before_merge(tmp_path):
+    subdir = tmp_path / "data"
+    subdir.mkdir()
+    make_csv(subdir / "z_second.csv", [{"v": 2}])
+    make_csv(subdir / "a_first.csv", [{"v": 1}])
+    merge_csvs(tmp_path)
+    out_file = next(subdir.glob("ALL_*.csv"))
+    df = pd.read_csv(out_file, sep=";")
+    assert list(df["v"]) == [1, 2]
+
+
+def test_multiple_subdirs(tmp_path):
+    sub1 = tmp_path / "d1"
+    sub2 = tmp_path / "d2"
+    sub1.mkdir()
+    sub2.mkdir()
+    make_csv(sub1 / "p_one.csv", [{"x": 1}])
+    make_csv(sub2 / "p_two.csv", [{"y": 2}])
+    merge_csvs(tmp_path)
+    assert len(list(sub1.glob("ALL_*.csv"))) == 1
+    assert len(list(sub2.glob("ALL_*.csv"))) == 1

@@ -3,7 +3,7 @@
 out_file="data/ml/sml/SML_RF.csv"
 
 modalities=(comp host func)
-gtools=(geN VIB VS2)
+gtools=(geN VIB VS2 ALL)
 
 for gtool in "${gtools[@]}"; do
   for modality in "${modalities[@]}"; do

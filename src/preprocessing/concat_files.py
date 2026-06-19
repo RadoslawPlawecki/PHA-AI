@@ -7,6 +7,7 @@ import pandas as pd
 
 
 def merge_tsvs(in_root: Path, out_root: Path):
+    """Merge tsv files into one."""
     for ptool_dir in in_root.iterdir():
         if not ptool_dir.is_dir():
             continue
@@ -33,6 +34,30 @@ def merge_tsvs(in_root: Path, out_root: Path):
             print(merged.head())
 
 
+def merge_csvs(in_root: str | Path):
+    """Merge csv files into one."""
+    in_root = Path(in_root)
+    for subdir in in_root.iterdir():
+        if not subdir.is_dir():
+            continue
+        csv_files = sorted(subdir.glob("*.csv"))
+        if not csv_files:
+            continue
+        merged_df = pd.concat(
+            (
+                pd.read_csv(f, delimiter=';', on_bad_lines="skip")
+                for f in csv_files
+            ),
+            ignore_index=True
+        )
+        output_name = f"ALL_{csv_files[0].stem.split('_', 1)[1]}.csv"
+        print(output_name)
+        output_path = subdir / output_name
+        merged_df.to_csv(output_path, index=False, sep=';')
+        print(f"Merged {len(csv_files)} files -> {output_path}")
+
+
 """in_root = Path("data/modalities/raw")
 out_root = Path("data/modalities/raw-merged")
 merge_tsvs(in_root=in_root, out_root=out_root)"""
+# merge_csvs("data/modalities/raw-merged")

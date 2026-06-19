@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
+
 class PhavipFeatureExtractor:
     CATEGORY_PATTERNS = {
         "structural":
@@ -60,7 +61,7 @@ class PhavipFeatureExtractor:
             r"duf|hypothetical|orf|gp\d+|vog"
     }
 
-    def __init__(self, min_coverage=0.7, min_pident=0.35):
+    def __init__(self, min_coverage: float = 0.7, min_pident: float = 0.35):
         self.min_coverage = min_coverage
         self.min_pident = min_pident
         self.compiled_patterns = {
