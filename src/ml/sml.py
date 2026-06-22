@@ -35,7 +35,7 @@ def main():
     logger.info("=== SINGLE-OMIC ALLERGY CLASSIFIER ===")
     loader = DataLoader(input_path=config.in_file, logger=logger)
     X, labels, sample_ids = loader.load()
-    nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=8e-5)
+    nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=4e-5)
     values, feature_names = nzv_filter.fit_transform(X)
     if config.run_fisher:
         logger.info("Running Fisher's Exact Test...")

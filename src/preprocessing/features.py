@@ -15,7 +15,7 @@ def build_matrix(df: pd.DataFrame, feature_col: str, id_col: str, binary: bool =
         return matrix.reset_index()
 
 
-def calculate_predation_pressure(df: pd.DataFrame, min_patients: int = 2) -> pd.DataFrame:
+def calculate_predation_pressure(df: pd.DataFrame) -> pd.DataFrame:
         df['norm_score'] = df['Confidence score'] / df.groupby('Accession')['Confidence score'].transform('sum')
         B = df.pivot_table(index='Accession', columns='genus', values='norm_score', aggfunc='sum', fill_value=0)
         A = pd.crosstab(df['id'], df['Accession'])
@@ -24,7 +24,5 @@ def calculate_predation_pressure(df: pd.DataFrame, min_patients: int = 2) -> pd.
         A = A[common_viruses]
         B = B.loc[common_viruses]
         C = A.dot(B)
-        mask = (C > 0).sum(axis=0) >= min_patients
-        C = C.loc[:, mask]
         C.columns.name = None
         return C.reset_index().rename(columns={'index': 'id', 'row_0': 'id'})

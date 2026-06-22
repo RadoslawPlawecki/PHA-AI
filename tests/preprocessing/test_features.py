@@ -28,7 +28,7 @@ def test_build_matrix_binary_false():
 def test_calculate_predation_pressure():
     df = pd.read_csv("project/tests/data/predation_pressure/input.csv")
     expected = pd.read_csv("project/tests/data/predation_pressure/expected.csv")
-    result = calculate_predation_pressure(df, min_patients=2)
+    result = calculate_predation_pressure(df)
     result = result.sort_values("id").reset_index(drop=True)
     expected = expected.sort_values("id").reset_index(drop=True)
     assert_frame_equal(

@@ -13,7 +13,7 @@ from .cli import ask_column
 
 
 class PhagcnFeatureExtractor:
-    def __init__(self, min_phagcn_score: float = 0.9, min_patients: int = 2):
+    def __init__(self, min_phagcn_score: float = 0.5, min_patients: int = 4):
         self.min_phagcn_score = min_phagcn_score
         self.min_patients = max(1, min_patients)
         
@@ -27,21 +27,21 @@ class PhagcnFeatureExtractor:
         df = df.copy()
         df = df[df["Prokaryotic virus (Bacteriophages and Archaeal virus)"] == "Y"]
         df = df[df["GenusCluster"] == "known_genus"]
-        df = df[
-            df["PhaGCNScore"]
-            .str.split(";")
-            .str[1]
-            .astype(float) >= self.min_phagcn_score
-        ]
-        split_lineage = (
-            df["Lineage"]
-            .str.split(";")
-            .explode()
-            .str.split(":", n=1, expand=True)
-            .pivot(columns=0, values=1)
-        )
-        df = pd.concat([df, split_lineage], axis=1)
-        df = df[['Accession', 'genus', 'species']]
+        def extract_taxonomy(row):
+            lineage_parts = row["Lineage"].split(";")
+            scores = [float(x) for x in row["PhaGCNScore"].split(";")]
+            taxonomy = {}
+            for lineage, score in zip(lineage_parts, scores):
+                rank, value = lineage.split(":", 1)
+                taxonomy[rank] = (
+                    value
+                    if score >= self.min_phagcn_score
+                    else None
+                )
+            return pd.Series(taxonomy)
+        taxonomy_df = df.apply(extract_taxonomy, axis=1)
+        df = pd.concat([df, taxonomy_df], axis=1)
+        df = df[['Accession', 'genus']]
         if out_path:
             df.to_csv(out_path, sep=';', index=False)
         return df

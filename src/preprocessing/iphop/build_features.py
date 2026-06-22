@@ -24,6 +24,6 @@ def _filter_accessions(df: pd.DataFrame) -> pd.DataFrame:
 
 def _build_feature_matrix(df: pd.DataFrame, min_patients: int, method: str):
     if method.startswith("1") or method == "pp":
-        return calculate_predation_pressure(df=df, min_patients=min_patients)
+        return calculate_predation_pressure(df=df)
     return build_matrix(df=df, feature_col="genus", id_col="id", binary=True, min_patients=min_patients)
     

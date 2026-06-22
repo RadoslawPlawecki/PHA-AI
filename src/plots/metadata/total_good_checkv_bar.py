@@ -61,7 +61,7 @@ for i, sample_group in enumerate(groups):
     ax.tick_params(axis='x', rotation=45, labelsize=12)
     ax.get_legend().remove()
 
-fig.suptitle(r'\textbf{Number of putative viral genomes}', fontsize=16, y=0.96)
+fig.suptitle(r'Number of putative viral genomes', fontsize=16, y=0.96)
 
 for ax in axes:
     ax.set_ylabel('Number of putative viral genomes', fontsize=14, labelpad=10)

@@ -48,7 +48,7 @@ ax = sns.scatterplot(
     linewidth=0.5
 )
 
-plt.suptitle(r'\textbf{Relation between file size and runtime}', fontsize=16, y=0.96)
+plt.suptitle(r'Relation between file size and runtime', fontsize=16, y=0.96)
 plt.xlabel(r'Samples (sorted ascending by file size)', fontsize=14, labelpad=10)
 plt.ylabel(r'Runtime [min]', fontsize=14, labelpad=10)
 

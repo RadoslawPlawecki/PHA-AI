@@ -41,7 +41,7 @@ ax = sns.boxplot(
     flierprops={"marker": "x"}
 )
 
-plt.title(r'\textbf{Virus identification tools runtimes}', fontsize=16, pad=10)
+plt.title(r'Viral identification tools runtimes', fontsize=16, pad=10)
 plt.xlabel('Tool', fontsize=14, labelpad=10)
 plt.ylabel('Runtime [min]', fontsize=14, labelpad=10)
 
