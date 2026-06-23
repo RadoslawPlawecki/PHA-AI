@@ -5,7 +5,7 @@ from ml.preprocessor import NearZeroVarianceFilter
 from .models import MultiOmicModel, get_rf_model, get_catboost_model, get_xgb_model
 from .validators import LateFusionLOOCVValidator, LateFusionRepeatedCVValidator, CVResults
 from .utils.reporter import ReportFormatter
-from .evaluator import Evaluator
+from .evaluator import EvaluatorSl
 from .utils.csv_reporter import CSVReporter
 import os
 import pandas as pd
@@ -31,7 +31,7 @@ def parse_args():
 
 
 def log_experiment_results(results: CVResults, feature_names_dict: dict, sample_ids: pd.Series, logger):
-    metrics = Evaluator.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
+    metrics = EvaluatorSl.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
     logger.info(ReportFormatter.format_metrics(metrics))
     logger.info(ReportFormatter.format_confusion_matrix(metrics["confusion_matrix"]))
     logger.info(ReportFormatter.format_misclassified_samples(
@@ -70,7 +70,7 @@ def main():
     for m in paths:
         loader = DataLoader(input_path=paths[m], logger=logger)
         X, labels, sample_ids = loader.load()
-        nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=8e-5)
+        nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=4e-5)
         values, feature_names = nzv_filter.fit_transform(X)
         X_data[m] = {
             "values": values,

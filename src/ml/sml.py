@@ -9,7 +9,7 @@ from .fisher_analyzer import FisherAnalyzer
 from .models import SingleOmicModel, get_rf_model, get_catboost_model, get_xgb_model
 from .validators import LOOCVValidator, RepeatedCVValidator, CVResults
 from .utils.reporter import ReportFormatter
-from .evaluator import Evaluator
+from .evaluator import EvaluatorSl
 from .utils.csv_reporter import CSVReporter
 from .config import SingleOmicConfig
 import os
@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 
 def log_experiment_results(results: CVResults, feature_names: list, sample_ids: pd.Series, logger):
-    metrics = Evaluator.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
+    metrics = EvaluatorSl.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
     logger.info(ReportFormatter.format_metrics(metrics))
     logger.info(ReportFormatter.format_confusion_matrix(metrics["confusion_matrix"]))
     logger.info(ReportFormatter.format_misclassified_samples(

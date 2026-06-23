@@ -15,9 +15,11 @@ from sklearn.metrics import (
 from imblearn.metrics import geometric_mean_score
 from .utils.bookstrap_ci import BootstrapCI
 import numpy as np
+from sklearn.metrics import silhouette_score
+from skbio.stats.distance import DistanceMatrix, anosim, permanova
 
 
-class Evaluator:
+class EvaluatorSl:
     METRICS = {
         "roc_auc": lambda yt, yp, ypb: roc_auc_score(yt, ypb),
         "balanced_accuracy": lambda yt, yp, ypb: balanced_accuracy_score(yt, yp),
@@ -79,3 +81,31 @@ class Evaluator:
         else:
             results["misclassified"] = None
         return results
+
+
+class EvaluatorUl:
+    METRICS = {
+        "silhouette": lambda dist_matrix, labels:
+            silhouette_score(dist_matrix, labels, metric="precomputed"),
+        "anosim": lambda dist_matrix, labels:
+            anosim(DistanceMatrix(dist_matrix), labels, permutations=999),
+        "permanova": lambda dist_matrix, labels:
+            permanova(DistanceMatrix(dist_matrix), labels, permutations=999),
+    }
+
+    @staticmethod
+    def evaluate(dist_matrix, labels):
+        results = {}
+        for name, metric_fn in EvaluatorUl.METRICS.items():
+            result = metric_fn(dist_matrix, labels)
+            if name == "silhouette":
+                results[name] = {
+                    "score": float(result)
+                }
+            else:
+                results[name] = {
+                    "statistic": float(result["test statistic"]),
+                    "p_value": float(result["p-value"]),
+                }
+        return results
+        
