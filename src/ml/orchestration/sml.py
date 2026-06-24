@@ -2,16 +2,25 @@
 @author: Radosław Pławecki
 """
 
-from .utils.logger import setup_logger
-from ml.data_loader import DataLoader
-from ml.preprocessor import NearZeroVarianceFilter
-from .fisher_analyzer import FisherAnalyzer
-from .models import SingleOmicModel, get_rf_model, get_catboost_model, get_xgb_model
-from .validators import LOOCVValidator, RepeatedCVValidator, CVResults
-from .utils.reporter import ReportFormatter
-from .evaluator import EvaluatorSl
-from .utils.csv_reporter import CSVReporter
-from .config import SingleOmicConfig
+from ml.ingestion.config import SingleOmicConfig
+from ml.ingestion.data_loader import DataLoader
+from ml.ingestion.preprocessor import NearZeroVarianceFilter
+from ml.analytics.logger import setup_logger
+from ml.analytics.fisher_analyzer import FisherAnalyzer
+from ml.analytics.reporter import ReportFormatter
+from ml.analytics.csv_reporter import CSVReporter
+from ml.ml.models import (
+    SingleOmicModel,
+    get_rf_model,
+    get_catboost_model,
+    get_xgb_model,
+)
+from ml.ml.validators import (
+    LOOCVValidator,
+    RepeatedCVValidator,
+    CVResults,
+)
+from ml.ml.evaluator import EvaluatorSl
 import os
 import pandas as pd
 import argparse

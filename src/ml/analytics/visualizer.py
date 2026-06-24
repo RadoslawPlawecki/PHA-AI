@@ -40,4 +40,5 @@ def plot_unsupervised_grid(coords_dict, y_aligned, sample_ids, title_main="Multi
         ax.legend(loc='best')
     plt.suptitle(title_main, fontsize=15, fontweight='bold', y=0.98)
     plt.tight_layout()
+    plt.savefig("plots/ul/vs2_mds.pdf", format="pdf")
     plt.show()

@@ -2,12 +2,15 @@
 @author: Radosław Pławecki
 """
 
-from .utils.logger import setup_logger
-from .utils.visualizer import plot_unsupervised_grid
-from ml.data_loader import DataLoader
-from ml.preprocessor import NearZeroVarianceFilter
-from .utils.reporter import ReportFormatter
-from .evaluator import EvaluatorUl
+from ml.ingestion.config import MdsConfig
+from ml.ingestion.data_aligner import DataAligner
+from ml.ingestion.data_loader import DataLoader
+from ml.ingestion.preprocessor import NearZeroVarianceFilter
+from ml.analytics.logger import setup_logger
+from ml.analytics.reporter import ReportFormatter
+from ml.analytics.csv_reporter import CSVReporter
+from ml.analytics.visualizer import plot_unsupervised_grid
+from ml.ml.evaluator import EvaluatorUl
 import numpy as np
 import pandas as pd
 import argparse
@@ -16,57 +19,37 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.manifold import MDS
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Multi-Dimensional Scaling")
-    parser.add_argument("--comp", type=str, required=True, help="Direct path to the virus composition modality")
-    parser.add_argument("--func", type=str, required=True, help="Direct path to the functional modality")
-    parser.add_argument("--host", type=str, required=True, help="Direct path to the host prediction modality")
-    return parser.parse_args()
-
-
 def main():
-    args = parse_args()
-    logger = setup_logger('mds')
+    config = MdsConfig.from_args()
+    logger = setup_logger('vs2_mds')
     logger.info("=== UNSUPERVISED LEARNING ===")
     paths = {
-        "comp": args.comp,
-        "func": args.func,
-        "host": args.host,
+        "comp": config.comp,
+        "func": config.func,
+        "host": config.host,
     }
-    X_data = {}
+    X_raw = {}
     for m in paths:
         loader = DataLoader(input_path=paths[m], logger=logger)
         X, labels, sample_ids = loader.load()
-        nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=8e-5)
+        nzv_filter = NearZeroVarianceFilter(logger=logger, threshold=4e-5)
         values, feature_names = nzv_filter.fit_transform(X)
-        X_data[m] = {
-            "ids": sample_ids,
+        X_raw[m] = {
             "values": values,
             "feature_names": feature_names,
-            "labels": labels
+            "ids": list(sample_ids),
+            "labels": list(labels)
         }
-    common_samples = (
-        set(X_data["comp"]["ids"])
-        & set(X_data["func"]["ids"])
-        & set(X_data["host"]["ids"])
-    )
-    common_samples = sorted(common_samples)
-    aligned_X = {}
-    labels_dict = {}
-    for m in paths:
-        id_to_idx = {sid: idx for idx, sid in enumerate(X_data[m]["ids"])}
-        aligned_indices = [id_to_idx[sid] for sid in common_samples]
-        aligned_X[m] = X_data[m]["values"][aligned_indices]
-        for sid, lbl in zip(X_data[m]["ids"], X_data[m]["labels"]):
-            labels_dict[sid] = lbl
-    y_aligned = np.array([labels_dict[sid] for sid in common_samples])
+    X_data, y_aligned, common_samples = DataAligner.align(X_raw)
+    logger.info(f"Dataset aligned")
+    aligned_X = {m: X_data[m]["values"] for m in X_data}
     dist_comp = squareform(pdist(aligned_X["comp"], metric='jaccard'))
     dist_host = squareform(pdist(aligned_X["host"], metric='euclidean'))
     dist_func = squareform(pdist(aligned_X["func"], metric='braycurtis'))
     logger.info(f"\nDistance matrices computed with dimensions:\n"
                 f"Comp = {aligned_X['comp'].shape[1]} features\n"
                 f"Host = {aligned_X['host'].shape[1]} features\n"
-                f"Func = {aligned_X['func'].shape[1]} features\n")
+                f"Func = {aligned_X['func'].shape[1]} features")
     dist_comp_norm = dist_comp / dist_comp.max() if dist_comp.max() > 0 else dist_comp
     dist_host_norm = dist_host / dist_host.max() if dist_host.max() > 0 else dist_host
     dist_func_norm = dist_func / dist_func.max() if dist_func.max() > 0 else dist_func

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-out_file="data/ml/sml/SML_CB.csv"
+out_file="data/ml/sml/SML_RF.csv"
 
 modalities=(comp host func)
-gtools=(geN VIB VS2 ALL)
+gtools=(geN VIB VS2)
 
 for gtool in "${gtools[@]}"; do
   for modality in "${modalities[@]}"; do
@@ -16,6 +16,6 @@ for gtool in "${gtools[@]}"; do
             --run_loocv \
             --run_repeated \
             --use_smote \
-            --model_type catboost
+            --model_type rf
     done
 done

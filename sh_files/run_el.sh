@@ -5,11 +5,14 @@ host="data/modalities/features/iphop/VIB_IPH_FEAT.csv"
 func="data/modalities/features/phavip/VIB_PHV_FEAT.csv"
 # out_file="data/ml/sml/rf/cherry/VS2_CHR_RF.csv"
 
-python -m project.src.ml.late_fusion \
+python -m project.src.ml.orchestration.el \
   --comp "$comp" \
   --host "$host" \
   --func "$func" \
   --run_loocv \
   --run_repeated \
   --use_smote \
-  --model_type catboost
+  --model_type catboost \
+  --fusion late \
+  --opt \
+  --n_trials 30

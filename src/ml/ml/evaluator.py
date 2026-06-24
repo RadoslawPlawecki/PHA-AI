@@ -13,7 +13,7 @@ from sklearn.metrics import (
     matthews_corrcoef
 )
 from imblearn.metrics import geometric_mean_score
-from .utils.bookstrap_ci import BootstrapCI
+from ml.analytics.bookstrap_ci import BootstrapCI
 import numpy as np
 from sklearn.metrics import silhouette_score
 from skbio.stats.distance import DistanceMatrix, anosim, permanova
@@ -40,12 +40,12 @@ class EvaluatorSl:
     @staticmethod
     def evaluate(y_true, y_pred, y_prob, test_idx):
         results = {}
-        for name, metric_fn in Evaluator.METRICS.items():
+        for name, metric_fn in EvaluatorSl.METRICS.items():
             score = metric_fn(y_true, y_pred, y_prob)
             metric_result = {
                 "score": score
             }
-            if name in Evaluator.CI_METRICS:
+            if name in EvaluatorSl.CI_METRICS:
                 metric_result["ci"] = BootstrapCI.compute(
                     y_true,
                     y_pred,

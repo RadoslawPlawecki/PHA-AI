@@ -105,7 +105,7 @@ class LateFusionRepeatedCVValidator(BaseValidator):
         perm_importances_folds = {m: [] for m in modalities}
         any_values = next(iter(X_data.values()))["values"]
         total = self.cv.get_n_splits(y=y)
-        it = tqdm(self.cv.split(any_values, y), total=total, desc="Multi-Omic Repeated CV", disable=not self.verbose)
+        it = tqdm(self.cv.split(any_values, y), total=total, desc="Multi-Omic Late Fusion Repeated CV", disable=not self.verbose)
         for train_idx, test_idx in it:
             fold_fusion_model = clone(fusion_model_wrapper)
             X_train_filtered = {}
@@ -156,7 +156,7 @@ class LateFusionLOOCVValidator(BaseValidator):
         modalities = list(X_data.keys())
         feature_importances = {m: np.zeros(X_data[m]["values"].shape[1]) for m in modalities}
         any_values = next(iter(X_data.values()))["values"]
-        it = tqdm(loo.split(any_values), total=len(y), desc="Multi-Omic LOOCV", disable=not self.verbose)
+        it = tqdm(loo.split(any_values), total=len(y), desc="Multi-Omic Late Fusion LOOCV", disable=not self.verbose)
         for train_idx, test_idx in it:
             fold_fusion_model = clone(fusion_model_wrapper)
             X_train_filtered = {}
@@ -186,3 +186,95 @@ class LateFusionLOOCVValidator(BaseValidator):
             importance_mean=mean_importance_dict,
             importance_std=None  
         )
+
+
+class EarlyFusionLOOCVValidator(BaseValidator):
+    def run(self, model_wrapper, X_data: dict, y: np.ndarray) -> CVResults:
+        loo = LeaveOneOut()
+        y_true_all, y_pred_all, y_prob_all, test_idx_all = [], [], [], []
+        modalities = list(X_data.keys())
+        X_fused = np.hstack([
+            X_data[m]["values"].values if hasattr(X_data[m]["values"], "values") else X_data[m]["values"]
+            for m in modalities
+        ])
+        flat_feat_importances = np.zeros(X_fused.shape[1])
+        it = tqdm(loo.split(X_fused), total=len(y), desc="Multi-Omic Early Fusion LOOCV", disable=not self.verbose)
+        for train_idx, test_idx in it:
+            fold_model = clone(model_wrapper)
+            X_train, X_test = X_fused[train_idx], X_fused[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            fold_model.fit(X_train, y_train)
+            y_true_all.append(y_test[0])
+            y_pred_all.append(fold_model.predict(X_test)[0])
+            y_prob_all.append(fold_model.predict_proba(X_test)[0, 1])
+            test_idx_all.append(test_idx[0])
+            flat_feat_importances += fold_model.feature_importances_
+        mean_flat_importance = flat_feat_importances / len(y)
+        mean_importance_dict = {}
+        current_idx = 0
+        for m in modalities:
+            n_features = X_data[m]["values"].shape[1]
+            mean_importance_dict[m] = mean_flat_importance[current_idx : current_idx + n_features]
+            current_idx += n_features
+        return CVResults(
+            y_true=np.array(y_true_all),
+            y_pred=np.array(y_pred_all),
+            y_prob=np.array(y_prob_all),
+            test_idx=np.array(test_idx_all),
+            importance_mean=mean_importance_dict,
+            importance_std=None
+        )
+
+
+class EarlyFusionRepeatedCVValidator(BaseValidator):
+    def __init__(self, n_splits=5, n_repeats=5, random_state=42, verbose=True):
+        super().__init__(verbose)
+        self.cv = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=random_state)
+
+    def run(self, model_wrapper, X_data: dict, y: np.ndarray) -> CVResults:
+        y_true_all, y_pred_all, y_prob_all, test_idx_all = [], [], [], []
+        perm_importance_folds = []
+        modalities = list(X_data.keys())
+        X_fused = np.hstack([
+            X_data[m]["values"].values if hasattr(X_data[m]["values"], "values") else X_data[m]["values"]
+            for m in modalities
+        ])
+        total_splits = self.cv.get_n_splits(X_fused, y)
+        it = tqdm(self.cv.split(X_fused, y), total=total_splits, desc="Multi-Omic Early Fusion Repeated CV", disable=not self.verbose)
+        for fold_id, (train_idx, test_idx) in enumerate(it):
+            fold_model = clone(model_wrapper)
+            X_train, X_test = X_fused[train_idx], X_fused[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            fold_model.fit(X_train, y_train)
+            y_true_all.extend(y_test)
+            y_pred_all.extend(fold_model.predict(X_test))
+            y_prob_all.extend(fold_model.predict_proba(X_test)[:, 1])
+            test_idx_all.extend(test_idx)
+            r = permutation_importance(
+                fold_model.model_ if hasattr(fold_model, "model_") else fold_model, 
+                X_test, 
+                y_test, 
+                n_repeats=5, 
+                random_state=42
+            )
+            perm_importance_folds.append(r.importances_mean)
+        perm_importance_matrix = np.vstack(perm_importance_folds)
+        flat_mean = perm_importance_matrix.mean(axis=0)
+        flat_std = perm_importance_matrix.std(axis=0)
+        mean_importance_dict = {}
+        std_importance_dict = {}
+        current_idx = 0
+        for m in modalities:
+            n_features = X_data[m]["values"].shape[1]
+            mean_importance_dict[m] = flat_mean[current_idx : current_idx + n_features]
+            std_importance_dict[m] = flat_std[current_idx : current_idx + n_features]
+            current_idx += n_features
+        return CVResults(
+            y_true=np.array(y_true_all),
+            y_pred=np.array(y_pred_all),
+            y_prob=np.array(y_prob_all),
+            test_idx=np.array(test_idx_all),
+            importance_mean=mean_importance_dict,
+            importance_std=std_importance_dict
+        )
+        
