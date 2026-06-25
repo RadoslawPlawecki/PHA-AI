@@ -36,7 +36,7 @@ class DataLoader:
     def _log_load(self, X: pd.DataFrame, y: np.ndarray) -> None:
         counts = Counter(y)
         total = len(y)
-        msg1 = f"Dataset loaded: {self.input_path}"
+        msg1 = f"Dataset Loaded: {self.input_path}"
         msg2 = f"Samples: {total}"
         msg3 = f"Features: {X.shape[1]}"
         class_distribution = "Class Distribution:"
@@ -44,8 +44,8 @@ class DataLoader:
         for cls, count in sorted(counts.items()):
             pct = 100 * count / total
             class_lines.append(f"       class {cls}: {count} ({pct:.1f}%)")
-        msg4 = f"\n{class_distribution}\n{"\n".join(class_lines)}"
-        msg5 = f"Missing values: {int(X.isna().sum().sum())}"
+        msg4 = f"\n{class_distribution}\n{"\n".join(class_lines)}\n"
+        msg5 = f"Missing Values: {int(X.isna().sum().sum())}"
         if self.logger:
             self.logger.info(msg1)
             self.logger.info(msg2)

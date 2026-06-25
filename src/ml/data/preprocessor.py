@@ -30,16 +30,16 @@ class NearZeroVarianceFilter:
         return self.fit(X).transform(X)
 
     def _log_filtering(self, X, mask, n_before: int, n_after: int, n_removed: int) -> None:
-        msg1 = f"Near-zero variance filter (threshold={self.threshold:g})"
+        msg1 = f"Near-Zero Variance Filter (Threshold={self.threshold:g})"
         msg2 = (
             f"Features: {n_before} -> {n_after} "
-            f"(removed {n_removed}, {100 * n_removed / n_before:.1f}%)"
+            f"(Removed {n_removed}, {100 * n_removed / n_before:.1f}%)"
         )
         removed_features = X.columns[~mask]
         if len(removed_features) > 0:
-            msg3 = f"Removed features: {', '.join(removed_features)}"
+            msg3 = f"Removed Features: {', '.join(removed_features)}"
         else:
-            msg3 = "No features removed"
+            msg3 = "No Features Removed"
         if self.logger:
             self.logger.info(msg1)
             self.logger.info(msg2)

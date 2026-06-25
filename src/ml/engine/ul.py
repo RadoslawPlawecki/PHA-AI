@@ -6,7 +6,7 @@ from ml.ingestion.config import MdsConfig
 from ml.ingestion.data_aligner import DataAligner
 from ml.ingestion.data_loader import DataLoader
 from ml.ingestion.preprocessor import NearZeroVarianceFilter
-from ml.analytics.logger import setup_logger
+from ml.analytics.logger import Logger
 from ml.analytics.reporter import ReportFormatter
 from ml.analytics.csv_reporter import CSVReporter
 from ml.analytics.visualizer import plot_unsupervised_grid
@@ -21,7 +21,7 @@ from sklearn.manifold import MDS
 
 def main():
     config = MdsConfig.from_args()
-    logger = setup_logger('vs2_mds')
+    logger = Logger.setup_logger('vs2_mds')
     logger.info("=== UNSUPERVISED LEARNING ===")
     paths = {
         "comp": config.comp,

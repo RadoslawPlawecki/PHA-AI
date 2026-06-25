@@ -41,12 +41,25 @@ class ReportFormatter:
         )
 
     @staticmethod
-    def format_top_features(importances: np.ndarray, feature_names: list, k: int = 10) -> str:
-        lines = ["\nTop Features:"]
+    def format_top_features(importances: np.ndarray, feature_names: list, X: np.ndarray, y: np.ndarray, k: int = 10) -> str:
+        lines = [
+            "\nTop Features & Class Characteristics:",
+            f"{'No.':>3} {'Feature':<33} | {'Importance':>10} | {'Mean Class 0':>12} | {'Mean Class 1':>12}",
+            "-" * 100,
+        ]
         idx = importances.argsort()[-k:][::-1]
         for i, j in enumerate(idx, 1):
-            lines.append(f"{i:>2}. {feature_names[j]:<15} | {importances[j]:.4f}")
-        return "\n".join(lines)
+            feat_values = X[:, j]
+            mean_0 = np.mean(feat_values[y == 0])
+            mean_1 = np.mean(feat_values[y == 1])
+            lines.append(
+                f"{i:>3}. "
+                f"{feature_names[j]:<33} | "
+                f"{importances[j]:>10.4f} | "
+                f"{mean_0:>12.4f} | "
+                f"{mean_1:>12.4f}"
+            )
+        return "\n".join(lines) + "\n"
 
     @staticmethod
     def format_misclassified_samples(y_true: np.ndarray, y_pred: np.ndarray, 
