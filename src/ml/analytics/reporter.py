@@ -10,23 +10,19 @@ import numpy as np
 class ReportFormatter:
     @staticmethod
     def format_metric(metric: dict) -> str:
-        score = metric["score"]
-        if "ci" in metric:
-            ci = metric["ci"]
-            return f"{score:.3f} (95% CI: {ci['lower']:.3f}–{ci['upper']:.3f})"
-        return f"{score:.3f}"
+        return f"{metric["score"]:.3f}"
 
     @staticmethod
     def format_metrics(metrics: dict) -> str:
         return (
             "\nModel Performance:\n"
             f"ROC-AUC: {ReportFormatter.format_metric(metrics['roc_auc'])}\n"
-            f"Balanced Accuracy: {ReportFormatter.format_metric(metrics['balanced_accuracy'])}\n"
+            f"Balanced Accuracy: {ReportFormatter.format_metric(metrics['bacc'])}\n"
             f"F1 Score: {ReportFormatter.format_metric(metrics['f1'])}\n"
             f"Precision: {ReportFormatter.format_metric(metrics['precision'])}\n"
             f"Recall (Sensitivity): {ReportFormatter.format_metric(metrics['recall'])}\n"
             f"Specificity: {ReportFormatter.format_metric(metrics['specificity'])}\n"
-            f"G-Mean: {ReportFormatter.format_metric(metrics['geometric_mean'])}\n"
+            f"G-Mean: {ReportFormatter.format_metric(metrics['gmean'])}\n"
             f"NPV: {ReportFormatter.format_metric(metrics['npv'])}\n"
             f"Average Precision Score: {ReportFormatter.format_metric(metrics['pr_auc'])}\n"
             f"Matthews Correlation Coefficient: {ReportFormatter.format_metric(metrics['mcc'])}\n"

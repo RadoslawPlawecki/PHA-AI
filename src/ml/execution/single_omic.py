@@ -6,7 +6,6 @@ from ml.data.config import SingleOmicConfig
 from ml.data.data_loader import DataLoader
 from ml.data.preprocessor import NearZeroVarianceFilter
 from ml.analytics.logger import Logger
-from ml.analytics.fisher_analyzer import FisherAnalyzer
 from ml.analytics.reporter import ReportFormatter
 from ml.analytics.saver import ExperimentSaver
 from ml.ml.models import (
@@ -42,7 +41,6 @@ class SingleOmicClassifier:
     def run(self):
         self._setup()
         self._load()
-        self._fisher_analysis()
         self._build_model()
         self._validate()
 
@@ -73,18 +71,6 @@ class SingleOmicClassifier:
         nzv = NearZeroVarianceFilter(logger=self.logger, threshold=4e-5)
         self.values, self.feature_names = nzv.fit_transform(X)
 
-    def _fisher_analysis(self):
-        if not self.config.run_fisher:
-            return
-        self.logger.info("Running Fisher's Exact Test...")
-        fisher = FisherAnalyzer()
-        significant = fisher.run(self.values, self.labels, self.feature_names)
-        if not significant:
-            self.logger.info("No Significant Features Found.")
-            return
-        for name, p in significant:
-            self.logger.info(f"{name} | p={p:.4e}")
-
     def _build_model(self):
         factories = {
             "rf": get_rf_model,
@@ -102,7 +88,7 @@ class SingleOmicClassifier:
             self._run_validation("rcv", RepeatedCVValidator(verbose=True))
 
     def _run_validation(self, name, validator):
-        self.logger.info(f"--- Starting Evaluation: {name.upper()} ---")
+        self.logger.info(f"--- SINGLE-OMIC EVALUATION: {name.upper()} ---")
         results = validator.run(self.model, self.values, self.labels)
         metrics = EvaluatorSl.evaluate(
             results.y_true,
@@ -140,8 +126,7 @@ class SingleOmicClassifier:
     def _save_results(self, name, results, metrics):
         mapped_ids = (
             self.sample_ids.iloc[results.test_idx].tolist()
-            if results.test_idx is not None
-            else None
+            if results.test_idx is not None else None
         )
         self.saver.save_feature_importance(
             results.importance_mean,

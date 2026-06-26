@@ -13,7 +13,6 @@ from sklearn.metrics import (
     matthews_corrcoef
 )
 from imblearn.metrics import geometric_mean_score
-from ml.analytics.bookstrap_ci import BootstrapCI
 import numpy as np
 from sklearn.metrics import silhouette_score
 from skbio.stats.distance import DistanceMatrix, anosim, permanova
@@ -22,18 +21,13 @@ from skbio.stats.distance import DistanceMatrix, anosim, permanova
 class EvaluatorSl:
     METRICS = {
         "roc_auc": lambda yt, yp, ypb: roc_auc_score(yt, ypb),
-        "balanced_accuracy": lambda yt, yp, ypb: balanced_accuracy_score(yt, yp),
+        "bacc": lambda yt, yp, ypb: balanced_accuracy_score(yt, yp),
         "f1": lambda yt, yp, ypb: f1_score(yt, yp),
         "precision": lambda yt, yp, ypb: precision_score(yt, yp, zero_division=0),
         "recall": lambda yt, yp, ypb: recall_score(yt, yp, zero_division=0),
         "pr_auc": lambda yt, yp, ypb: average_precision_score(yt, ypb),
         "mcc": lambda yt, yp, ypb: matthews_corrcoef(yt, yp),
-        "geometric_mean": lambda yt, yp, ypb: geometric_mean_score(yt, yp),
-    }
-    CI_METRICS = {
-        "roc_auc",
-        "balanced_accuracy",
-        "pr_auc",
+        "gmean": lambda yt, yp, ypb: geometric_mean_score(yt, yp),
     }
 
 
@@ -45,13 +39,6 @@ class EvaluatorSl:
             metric_result = {
                 "score": score
             }
-            if name in EvaluatorSl.CI_METRICS:
-                metric_result["ci"] = BootstrapCI.compute(
-                    y_true,
-                    y_pred,
-                    y_prob,
-                    metric_fn
-                )
             results[name] = metric_result
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
         results["specificity"] = {

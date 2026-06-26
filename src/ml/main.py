@@ -7,17 +7,18 @@ from ml.data.config import (
     MultiOmicConfig,
     MdsConfig
 )
-from ml.engine.single_omic import SingleOmicClassifier
+from ml.execution.single_omic import SingleOmicClassifier
+from ml.execution.multi_omic import MultiOmicClassifier
 
 class ExperimentRunner:
     def __init__(self, config):
         self.config = config
 
     def run(self):
-        engine = self._build_engine()
-        engine.run()
+        classifier = self._build_classifier()
+        classifier.run()
 
-    def _build_engine(self):
+    def _build_classifier(self):
         if isinstance(self.config, SingleOmicConfig):
             return SingleOmicClassifier(self.config)
         if isinstance(self.config, MultiOmicConfig):

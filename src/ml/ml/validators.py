@@ -119,6 +119,9 @@ class LateFusionRepeatedCVValidator(BaseValidator):
         total = self.cv.get_n_splits(y=y)
         it = tqdm(self.cv.split(any_values, y), total=total, desc="Multi-Omic Late Fusion Repeated CV", disable=not self.verbose)
         for fold_id, (train_idx, test_idx) in enumerate(it):
+            n_samples = len(test_idx)
+            current_repeat = fold_id // self.n_splits
+            current_fold = fold_id % self.n_splits
             fold_fusion_model = clone(fusion_model_wrapper)
             X_train_filtered = {}
             X_test_filtered = {}
@@ -260,6 +263,9 @@ class EarlyFusionRepeatedCVValidator(BaseValidator):
         total_splits = self.cv.get_n_splits(X_fused, y)
         it = tqdm(self.cv.split(X_fused, y), total=total_splits, desc="Multi-Omic Early Fusion Repeated CV", disable=not self.verbose)
         for fold_id, (train_idx, test_idx) in enumerate(it):
+            n_samples = len(test_idx)
+            current_repeat = fold_id // self.n_splits
+            current_fold = fold_id % self.n_splits
             fold_model = clone(model_wrapper)
             X_train, X_test = X_fused[train_idx], X_fused[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
