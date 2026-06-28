@@ -9,6 +9,7 @@ from ml.data.config import (
 )
 from ml.execution.single_omic import SingleOmicClassifier
 from ml.execution.multi_omic import MultiOmicClassifier
+from ml.execution.unsupervised_classifier import UnsupervisedClassifier
 
 class ExperimentRunner:
     def __init__(self, config):

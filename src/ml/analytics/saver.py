@@ -80,3 +80,18 @@ class ExperimentSaver:
             data["repeat"] = repeats
         df = pd.DataFrame(data)
         df.to_csv(path, index=False)
+
+    def save_unsupervised_metrics(self, all_metrics: dict, subfolder: str = ""):
+        target_dir = self._get_target_dir(subfolder)
+        path = os.path.join(target_dir, "unsupervised_metrics.csv")
+        flattened_data = {}
+        for modality, metrics in all_metrics.items():
+            flattened_data[modality] = {
+                "silhouette_score": metrics.get("silhouette", {}).get("score", np.nan),
+                "permanova_F": metrics.get("permanova", {}).get("statistic", np.nan),
+                "permanova_p": metrics.get("permanova", {}).get("p_value", np.nan)
+            }
+        df = pd.DataFrame(flattened_data).T 
+        df.index = df.index.str.capitalize()
+        df.index.name = "Modality"
+        df.to_csv(path)

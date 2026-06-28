@@ -12,6 +12,7 @@ class MdsConfig:
     comp: str
     host: str 
     func: str 
+    out_dir: str
 
     @classmethod
     def from_args(cls) -> "MdSConfig":
@@ -19,11 +20,13 @@ class MdsConfig:
         parser.add_argument("--comp", type=str, required=True, help="Direct path to the virus composition modality")
         parser.add_argument("--func", type=str, required=True, help="Direct path to the functional modality")
         parser.add_argument("--host", type=str, required=True, help="Direct path to the host prediction modality")
+        parser.add_argument("--out_dir", type=str, required=True)
         args = parser.parse_args()
         return cls(
             comp=args.comp,
             host=args.host,
             func=args.func,
+            out_dir=args.out_dir,
         )
 
 

@@ -2,7 +2,7 @@
 @author: Radosław Pławecki
 """
 
-from ml.data.config import SingleOmicConfig, MultiOmicConfig
+from ml.data.config import SingleOmicConfig, MultiOmicConfig, MdsConfig
 from ml.main import ExperimentRunner
 import argparse
 
@@ -64,9 +64,23 @@ class Runner():
                     )
                     ExperimentRunner(config).run()
 
+    @staticmethod
+    def mds():
+        vtools = ["geN", "VIB", "VS2"]
+        for vtool in vtools:
+            config = MdsConfig(
+                comp=f"data/modalities/features/phagcn/{vtool}_PGN_FEAT.csv",
+                host=f"data/modalities/features/iphop/{vtool}_IPH_FEAT.csv",
+                func=f"data/modalities/features/phavip/{vtool}_PHV_FEAT.csv",
+                out_dir="data/results/mds",
+            )
+            ExperimentRunner(config).run()
+
 
 runner = Runner()
 if args.classifier == "single":
     runner.single_omic()
 elif args.classifier == "multi":
     runner.multi_omic()
+elif args.classifier == "mds":
+    runner.mds()

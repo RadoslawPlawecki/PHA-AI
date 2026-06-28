@@ -85,15 +85,13 @@ class ReportFormatter:
             "",
             "Unsupervised Evaluation",
             "-" * 80,
-            f"{'Modality':<10} {'Silhouette':>12} {'ANOSIM R':>12} {'ANOSIM p':>12} {'PERMANOVA F':>14} {'PERMANOVA p':>14}",
+            f"{'Modality':<10} {'Silhouette':>12} {'PERMANOVA F':>14} {'PERMANOVA p':>14}",
             "-" * 80,
         ]
         for modality, metrics in results.items():
             lines.append(
                 f"{modality.upper():<10}"
                 f"{metrics['silhouette']['score']:>12.3f}"
-                f"{metrics['anosim']['statistic']:>12.3f}"
-                f"{metrics['anosim']['p_value']:>12.3f}"
                 f"{metrics['permanova']['statistic']:>14.3f}"
                 f"{metrics['permanova']['p_value']:>14.3f}"
             )

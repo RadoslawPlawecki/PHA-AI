@@ -74,8 +74,6 @@ class EvaluatorUl:
     METRICS = {
         "silhouette": lambda dist_matrix, labels:
             silhouette_score(dist_matrix, labels, metric="precomputed"),
-        "anosim": lambda dist_matrix, labels:
-            anosim(DistanceMatrix(dist_matrix), labels, permutations=999),
         "permanova": lambda dist_matrix, labels:
             permanova(DistanceMatrix(dist_matrix), labels, permutations=999),
     }
