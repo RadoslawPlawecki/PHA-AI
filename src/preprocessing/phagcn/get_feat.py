@@ -7,8 +7,8 @@ from .feature_extractor import PhagcnFeatureExtractor
 
 extractor = PhagcnFeatureExtractor()
 
-in_root = Path("data/modalities/raw-merged/phagcn")
-out_root = Path("data/modalities/features/phagcn")
+in_root = Path("data/modalities/2.0/raw-merged/phagcn")
+out_root = Path("data/modalities/2.0/features/phagcn")
 
 for file in in_root.iterdir():
     final_df = extractor.process_file(

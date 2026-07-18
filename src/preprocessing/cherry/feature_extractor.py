@@ -7,8 +7,8 @@ import questionary
 from pathlib import Path
 from typing import Optional
 from .build_features import build_features
-from ..utils import format_accession, split_taxonomy
-from .cli import ask_column
+from ..utils import format_accession, split_taxonomy, apply_mask
+from ..cli import ask_column, ask_mask_file
 
 
 class CherryFeatureExtractor:
@@ -46,7 +46,9 @@ class CherryFeatureExtractor:
         out_root.mkdir(parents=True, exist_ok=True)
         df = self.load_file(in_root)
         df = df.copy()
-        filtered_df = self.preprocess(df, out_path=f"data/modalities/preprocessed/cherry/{in_root.stem[:3]}_ChV_CHR_M_PP.csv")
+        mask_path = ask_mask_file(in_root)
+        df = apply_mask(df, mask_path)
+        filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/cherry/{in_root.stem[:3]}_ChV_CHR_M_PP.csv")
         final_df = self._get_feat(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_CHR_FEAT.csv"
         final_df.to_csv(out_path, sep=';', index=False)

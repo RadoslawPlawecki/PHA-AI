@@ -28,19 +28,18 @@ class Runner():
             "func": "PHV"
         }
         vtools = ["geN", "VIB", "VS2"]
-        # modalities = ["comp", "host-score", "host", "func"]
-        modalities = ["host"]
+        modalities = ["comp", "host-score", "host", "func"]
         for vtool in vtools:
             for modality in modalities:
                 config = SingleOmicConfig(
-                    in_file=f"data/modalities/features/{modalities_dict[modality]}/{vtool}_{tags_dict[modality]}_FEAT.csv",
+                    in_file=f"data/modalities/2.0/features/{modalities_dict[modality]}/{vtool}_{tags_dict[modality]}_FEAT.csv",
                     modality=modality,
                     vtool=vtool,
                     model_type="catboost",
                     run_loocv=True,
                     run_repeated=True,
                     use_smote=True,
-                    out_dir="data/results/single_omic/catboost"
+                    out_dir="data/results/single_omic/2.0/catboost"
                 )
                 ExperimentRunner(config).run()
 
@@ -53,9 +52,9 @@ class Runner():
             for model_type in model_types:
                 for vtool in vtools:
                     config = MultiOmicConfig(
-                        comp=f"data/modalities/features/phagcn/{vtool}_PGN_FEAT.csv",
-                        host=f"data/modalities/features/cherry/{vtool}_CHR_FEAT.csv",
-                        func=f"data/modalities/features/phavip/{vtool}_PHV_FEAT.csv",
+                        comp=f"data/modalities/2.0/features/phagcn/{vtool}_PGN_FEAT.csv",
+                        host=f"data/modalities/2.0/features/cherry/{vtool}_CHR_FEAT.csv",
+                        func=f"data/modalities/2.0/features/phavip/{vtool}_PHV_FEAT.csv",
                         out_dir="data/results/multi_omic/2.0",
                         model_type=model_type,
                         run_loocv=True,
@@ -63,7 +62,7 @@ class Runner():
                         use_smote=True,
                         fusion=fusion,
                         opt=True,
-                        n_trials=100
+                        n_trials=250
                     )
                     ExperimentRunner(config).run()
 

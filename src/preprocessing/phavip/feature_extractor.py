@@ -6,6 +6,8 @@ import pandas as pd
 import re
 from pathlib import Path
 from typing import Optional
+from ..utils import format_accession, apply_mask
+from ..cli import ask_mask_file
 
 
 class PhavipFeatureExtractor:
@@ -70,7 +72,6 @@ class PhavipFeatureExtractor:
         }
 
     def load_file(self, path: Path) -> pd.DataFrame:
-        from ..utils import format_accession
         df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
         gtool_id = path.stem.split('_')[0]
         df["Accession"] = format_accession(gtool_id, df["Genome"])
@@ -126,6 +127,8 @@ class PhavipFeatureExtractor:
         out_root.mkdir(parents=True, exist_ok=True)
         df = self.load_file(in_root)
         df = df.copy()
+        mask_path = ask_mask_file(in_root)
+        df = apply_mask(df, mask_path)
         filtered_df = self.preprocess(df)
         category_df = self.calculate_category_ratios(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_PHV_FEAT.csv"
