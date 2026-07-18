@@ -57,7 +57,7 @@ def merge_csvs(in_root: str | Path):
         print(f"Merged {len(csv_files)} files -> {output_path}")
 
 
-"""in_root = Path("data/modalities/raw")
+in_root = Path("data/modalities/raw")
 out_root = Path("data/modalities/raw-merged")
-merge_tsvs(in_root=in_root, out_root=out_root)"""
+merge_tsvs(in_root=in_root, out_root=out_root)
 # merge_csvs("data/modalities/raw-merged")

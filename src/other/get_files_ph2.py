@@ -7,24 +7,26 @@ from pathlib import Path
 import shutil
 
 gtools = ["genomad", "virsorter2", "vibrant"]
-ptools = ["phavip", "cherry", "phagcn"]
+ptools = ["phavip", "cherry", "phagcn", "phatyp"]
 
 patterns = {
     "phavip": "gene_annotation.tsv",
     "cherry": "cherry_prediction.tsv",
-    "phagcn": "phagcn_prediction.tsv"
+    "phagcn": "phagcn_prediction.tsv",
+    "phatyp": "phatyp_prediction.tsv"
 }
 
 suffixes = {
     "phavip": "PHV",
     "cherry": "CHR",
-    "phagcn": "PGN"
+    "phagcn": "PGN",
+    "phatyp": "PHT"
 }
 
 jobs = [
     {
         "root": f"data/phabox2/{ptool}/{gtool}",
-        "dest": f"data/{ptool}/{gtool}",
+        "dest": f"data/modalities/raw/{ptool}/{gtool}",
         "pattern": patterns[ptool],
         "suffix": suffixes[ptool]
     }

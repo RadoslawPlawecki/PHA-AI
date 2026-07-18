@@ -17,10 +17,14 @@ class DataLoader:
             raise FileNotFoundError(f"Input file not found: {self.input_path}")
 
     def load(self):
-        with open(self.input_path, newline="") as f:
-            sample = f.read(4096)
-            dialect = csv.Sniffer().sniff(sample)
-        df = pd.read_csv(self.input_path, sep=dialect.delimiter)
+        try:
+            with open(self.input_path, newline="") as f:
+                sample = f.read(4096)
+                dialect = csv.Sniffer().sniff(sample)
+                sep = dialect.delimiter
+        except:
+            sep = ";"
+        df = pd.read_csv(self.input_path, sep=sep)
         sample_ids = df['id'].copy()
         y = (
             pd.to_numeric(
