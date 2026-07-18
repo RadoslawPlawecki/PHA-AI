@@ -6,7 +6,7 @@ import pandas as pd
 import re
 from pathlib import Path
 from typing import Optional
-from ..utils import format_accession, apply_mask
+from ..utils import load_file, apply_mask
 from ..cli import ask_mask_file
 
 
@@ -71,34 +71,17 @@ class PhavipFeatureExtractor:
             for k, v in self.CATEGORY_PATTERNS.items()
         }
 
-    def load_file(self, path: Path) -> pd.DataFrame:
-        df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
-        gtool_id = path.stem.split('_')[0]
-        df["Accession"] = format_accession(gtool_id, df["Genome"])
-        df["ORF"] = format_accession(gtool_id, df["ORF"])
-        df['id'] = df['Accession'].astype(str).str.split('_').str[0]
-        return df
-
-    @staticmethod
-    def extract_labels(samples: pd.Series) -> pd.Series:
-        last_part = samples.str.split("|").str[-1]
-        numeric = (
-            last_part
-            .str.extract(r'S(\d+)')[0]
-            .fillna(999)
-            .astype(int)
-        )
-        return (numeric <= 34).astype(int)
-
-    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+    def preprocess(self, df: pd.DataFrame, out_path: Optional[str] = None) -> pd.DataFrame:
         df = df.copy()
         df["coverage"] = pd.to_numeric(df["coverage"], errors="coerce")
         df["pident"] = pd.to_numeric(df["pident"], errors="coerce")
-        df["label"] = self.extract_labels(df["id"])
         df = df[
             (df["coverage"] >= self.min_coverage) &
             (df["pident"] / 100 >= self.min_pident)
         ]
+        df["Category"] = self.categorize_annotations(df["Annotation"])
+        if out_path:
+            df[["Accession", "Annotation", "Category"]].to_csv(out_path, sep=';', index=False)
         return df
 
     def categorize_annotations(self, annotations: pd.Series) -> pd.Series:
@@ -111,7 +94,7 @@ class PhavipFeatureExtractor:
 
     def calculate_category_ratios(self, df: pd.DataFrame, save_path: Optional[Path] = None) -> pd.DataFrame:
         df = df.copy()
-        df["Category"] = self.categorize_annotations(df["Annotation"])
+        df["id"] = df["Accession"].str.split("_").str[0]
         counts = df.groupby(["id", "Category"]).size().unstack(fill_value=0)
         ratios = counts.div(counts.sum(axis=1), axis=0).round(4)
         ratios.columns = [
@@ -125,11 +108,11 @@ class PhavipFeatureExtractor:
 
     def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
         out_root.mkdir(parents=True, exist_ok=True)
-        df = self.load_file(in_root)
+        df = load_file("Genome", in_root)
         df = df.copy()
         mask_path = ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
-        filtered_df = self.preprocess(df)
+        filtered_df = self.preprocess(df, out_path=f"data/modalities/1.0/preprocessed/phavip/{in_root.stem[:3]}_ChV_PHA_ORFs_PHV_M_PP.csv")
         category_df = self.calculate_category_ratios(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_PHV_FEAT.csv"
         category_df.to_csv(out_path, sep=';', index=False)

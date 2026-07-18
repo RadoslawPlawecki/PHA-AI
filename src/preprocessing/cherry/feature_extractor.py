@@ -7,7 +7,7 @@ import questionary
 from pathlib import Path
 from typing import Optional
 from .build_features import build_features
-from ..utils import format_accession, split_taxonomy, apply_mask
+from ..utils import split_taxonomy, apply_mask, load_file
 from ..cli import ask_column, ask_mask_file
 
 
@@ -44,7 +44,7 @@ class CherryFeatureExtractor:
 
     def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
         out_root.mkdir(parents=True, exist_ok=True)
-        df = self.load_file(in_root)
+        df = load_file(in_root)
         df = df.copy()
         mask_path = ask_mask_file(in_root)
         df = apply_mask(df, mask_path)

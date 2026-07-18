@@ -50,7 +50,7 @@ class PhagcnFeatureExtractor:
         df = df.copy()
         mask_path = ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
-        filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/phagcn/{in_root.stem[:3]}_ChV_PGN_M_PP.csv")
+        filtered_df = self.preprocess(df, out_path=f"data/modalities/1.0/preprocessed/phagcn/{in_root.stem[:3]}_ChV_PGN_M_PP.csv")
         final_df = self._get_feat(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_PGN_FEAT.csv"
         final_df.to_csv(out_path, sep=';', index=False)

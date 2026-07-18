@@ -52,9 +52,9 @@ class Runner():
             for model_type in model_types:
                 for vtool in vtools:
                     config = MultiOmicConfig(
-                        comp=f"data/modalities/2.0/features/phagcn/{vtool}_PGN_FEAT.csv",
-                        host=f"data/modalities/2.0/features/cherry/{vtool}_CHR_FEAT.csv",
-                        func=f"data/modalities/2.0/features/phavip/{vtool}_PHV_FEAT.csv",
+                        comp=f"data/modalities/1.0/features/phagcn/{vtool}_PGN_FEAT.csv",
+                        host=f"data/modalities/1.0/features/cherry/{vtool}_CHR_FEAT.csv",
+                        func=f"data/modalities/1.0/features/phavip/{vtool}_PHV_FEAT.csv",
                         out_dir="data/results/multi_omic/2.0",
                         model_type=model_type,
                         run_loocv=True,

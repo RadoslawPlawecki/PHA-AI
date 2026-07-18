@@ -11,19 +11,13 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from ..cli import ask_feature_method, ask_normalization_method, ask_mask_file
 from .build_features import build_features
-from ..utils import format_accession, split_taxonomy, apply_mask
+from ..utils import split_taxonomy, apply_mask
 from ..normalization import apply_normalization
 
 
 class IphopFeatureExtractor:
     def __init__(self, min_patients: int = 1):
         self.min_patients = max(1, min_patients)
-        
-    def load_file(self, path: Path) -> pd.DataFrame:
-        df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
-        gtool_id = path.stem.split('_')[0]
-        df["Accession"] = format_accession(gtool_id, df["Virus"])
-        return df
 
     def preprocess(self, df: pd.DataFrame, out_path: Optional[str] = None) -> pd.DataFrame:
         df = df.copy()
@@ -36,7 +30,7 @@ class IphopFeatureExtractor:
 
     def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
         out_root.mkdir(parents=True, exist_ok=True)
-        df = self.load_file(in_root)
+        df = load_file(in_root)
         df = df.copy()
         mask_path = ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
