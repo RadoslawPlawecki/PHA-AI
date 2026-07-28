@@ -96,7 +96,7 @@ def generate_separated_heatmaps(base_dir, model):
                             linewidths=0.7, linecolor="#f0f0f0", ax=ax)
                 if t_idx == 0:
                     cbar = im.collections[0].colorbar
-                    cbar.set_label(cbar_label, fontsize=14, fontweight='bold') # Większy tytuł
+                    cbar.set_label(cbar_label, fontsize=14, fontweight='bold') 
                     cbar.ax.tick_params(labelsize=12)
                 ax.tick_params(axis='x', labelsize=10, labelrotation=90)
                 ax.tick_params(axis='y', labelsize=12, labelrotation=0)

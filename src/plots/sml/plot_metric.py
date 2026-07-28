@@ -82,7 +82,7 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
             ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=11)
         else:
             ax.set_ylabel("")
-            ax.set_yticklabels([]) #
+            ax.set_yticklabels([]) 
         ax.set_xticklabels(ax.get_xticklabels(), ha="center", rotation=0, fontsize=11)
         ax.tick_params(axis='both', which='major', labelsize=11)
     plt.tight_layout()

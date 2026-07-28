@@ -40,7 +40,6 @@ def generate_importance_plots(base_dir, model):
         'other_function_ratio': 'Other function',
         'transcription_regulation_ratio': 'Transcription \& regulation',
         'lysogeny_ratio': 'Lysogeny'
-        # Możesz tu dopisywać kolejne, jeśli zajdzie taka potrzeba
     }
     c0_color = '#34495e'  
     c1_color = '#27ae60' 

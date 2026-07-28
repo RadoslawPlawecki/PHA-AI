@@ -36,6 +36,6 @@ def compare_type_ratios(df: pd.DataFrame):
     return pd.DataFrame(results)
 
 
-file_path = "data/modalities/2.0/features/phatyp/VS2_PHT_FEAT.csv"
+file_path = "data/modalities/2.0/features/phatyp/geN_PHT_FEAT.csv"
 df = pd.read_csv(file_path, sep=';')
 print(compare_type_ratios(df))

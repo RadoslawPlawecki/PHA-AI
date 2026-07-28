@@ -45,26 +45,30 @@ class Runner():
 
     @staticmethod
     def multi_omic():
+        host_types = ["host=cherry", "host=iphop"]
+        host_dictionary = {"cherry": "CHR", "iphop": "IPH"}
         model_types = ["catboost"]
         fusions = ["late", "early"]
         vtools = ["geN", "VIB", "VS2"]
-        for fusion in fusions:
-            for model_type in model_types:
-                for vtool in vtools:
-                    config = MultiOmicConfig(
-                        comp=f"data/modalities/1.0/features/phagcn/{vtool}_PGN_FEAT.csv",
-                        host=f"data/modalities/1.0/features/cherry/{vtool}_CHR_FEAT.csv",
-                        func=f"data/modalities/1.0/features/phavip/{vtool}_PHV_FEAT.csv",
-                        out_dir="data/results/multi_omic/2.0",
-                        model_type=model_type,
-                        run_loocv=True,
-                        run_repeated=True,
-                        use_smote=True,
-                        fusion=fusion,
-                        opt=True,
-                        n_trials=250
-                    )
-                    ExperimentRunner(config).run()
+        for host_type in host_types:
+            for fusion in fusions:
+                for model_type in model_types:
+                    for vtool in vtools:
+                        host = host_type.split("=")[1]
+                        config = MultiOmicConfig(
+                            comp=f"data/modalities/{host_type}/features/phagcn/{vtool}_PGN_FEAT.csv",
+                            host=f"data/modalities/{host_type}/features/{host}/{vtool}_{host_dictionary[host]}_FEAT.csv",
+                            func=f"data/modalities/{host_type}/features/phavip/{vtool}_PHV_FEAT.csv",
+                            out_dir=f"data/results/multi_omic/{host_type}",
+                            model_type=model_type,
+                            run_loocv=True,
+                            run_repeated=True,
+                            use_smote=True,
+                            fusion=fusion,
+                            opt=True,
+                            n_trials=250
+                        )
+                        ExperimentRunner(config).run()
 
     @staticmethod
     def mds():

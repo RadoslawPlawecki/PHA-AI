@@ -88,7 +88,7 @@ def compile_multi_omic_metrics_to_csv(base_dir, output_csv, model):
 
 if __name__ == "__main__":
     model = "catboost"
-    results_path = f"data/results/multi_omic/{model}"
+    results_path = f"data/results/multi_omic/host=cherry/{model}"
     output_filename = os.path.join(results_path, "all_metrics.csv") 
     compile_multi_omic_metrics_to_csv(results_path, output_filename, model=model)
     
