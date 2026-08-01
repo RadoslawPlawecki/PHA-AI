@@ -69,7 +69,7 @@ def apply_mask(df: pd.DataFrame, mask_path: Path) -> pd.DataFrame:
 
 
 def load_file(accession: str = "Accession", path: Optional[Path] = None) -> pd.DataFrame:
-        df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
-        gtool_id = path.stem.split('_')[0]
-        df["Accession"] = format_accession(gtool_id, df[accession])
-        return df
+    df = pd.read_csv(path, delimiter=';', on_bad_lines='warn')
+    gtool_id = path.stem.split('_')[0]
+    df["Accession"] = format_accession(gtool_id, df[accession])
+    return df

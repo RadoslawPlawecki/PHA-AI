@@ -3,6 +3,16 @@
 """
 
 import optuna
+import os
+import tempfile
+import pandas as pd
+import numpy as np
+from typing import Callable, Any
+from ml.data.data_loader import DataLoader
+from ml.data.preprocessor import NearZeroVarianceFilter
+from ml.ml.models import get_catboost_model
+from ml.ml.validators import LOOCVValidator
+from ml.ml.evaluator import EvaluatorSl
 from ml.ml.models import MultiOmicModel
 from ml.ml.validators import LateFusionLOOCVValidator
 from ml.ml.evaluator import EvaluatorSl
@@ -59,3 +69,49 @@ class LateFusionWeightOptimizer:
             self.logger.info(msg)
         else:
             print(msg)
+
+
+class FeatureExtractionOptimizer:
+    def __init__(self, model: Any, validator: Any, target_metric: str = 'mcc', 
+                 nzv_threshold: float = 4e-5, min_features: int = 3, logger=None):
+        self.model = model
+        self.validator = validator
+        self.target_metric = target_metric
+        self.nzv_threshold = nzv_threshold
+        self.min_features = min_features
+        self.logger = logger
+
+    def run(self, feature_matrix: pd.DataFrame) -> float:   
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode='w') as tmp:
+            feature_matrix.to_csv(tmp.name, sep=';', index=False)
+            tmp_path = tmp.name
+        try:
+            loader = DataLoader(input_path=tmp_path, logger=self.logger)
+            X, labels, sample_ids = loader.load()
+            if X.empty or X.shape[1] < self.min_features or len(np.unique(labels)) <= 1:
+                return 0.0
+            nzv = NearZeroVarianceFilter(logger=self.logger, threshold=self.nzv_threshold)
+            values, feature_names = nzv.fit_transform(X)
+            if values.shape[1] == 0:
+                return 0.0
+            if isinstance(values, pd.DataFrame):
+                values = values.copy()
+            else:
+                values = np.array(values, copy=True)
+            results = self.validator.run(self.model, values, labels)
+            metrics = EvaluatorSl.evaluate(
+                results.y_true,
+                results.y_pred,
+                results.y_prob,
+                results.test_idx
+            )
+            metric_value = metrics.get(self.target_metric, 0.0) 
+            if isinstance(metric_value, dict):
+                metric_value = metric_value.get('score', 0.0)   
+            return float(metric_value)
+        except KeyError:
+            return 0.0
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+                

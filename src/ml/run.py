@@ -17,18 +17,16 @@ class Runner():
     def single_omic():
         modalities_dict = {
             "comp": "phagcn",
-            "host-score": "iphop",
             "host": "cherry",
             "func": "phavip"
         }
         tags_dict = {
             "comp": "PGN",
-            "host-score": "IPH",
             "host": "CHR",
             "func": "PHV"
         }
         vtools = ["geN", "VIB", "VS2"]
-        modalities = ["comp", "host-score", "host", "func"]
+        modalities = ["comp", "host", "func"]
         for vtool in vtools:
             for modality in modalities:
                 config = SingleOmicConfig(

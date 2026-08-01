@@ -1,0 +1,120 @@
+[megahit]
+path = "data/megahit"
+type = "directory"
+description = "Metagenome assemblies generated using the MEGAHIT assembler."
+
+
+[genomad]
+path = "data/genomad"
+type = "directory"
+description = "Viral sequence predictions and annotations generated using geNomad."
+
+
+[vibrant]
+path = "data/vibrant"
+type = "directory"
+description = "VIBRANT-based viral sequence annotations and auxiliary files."
+
+
+[virsorter2]
+path = "data/virsorter2"
+type = "directory"
+description = "Viral sequence predictions and annotations generated using VirSorter2."
+
+
+[genomes]
+path = "data/genomes"
+type = "directory"
+description = "Putative viral genomes identified by viral identification tools."
+
+
+[checkv]
+path = "data/checkv"
+type = "directory"
+description = "Genome quality assessment results generated using CheckV."
+
+
+[post_checkv]
+path = "data/post-checkv"
+type = "directory"
+description = "Viral genomes after CheckV quality filtering."
+
+
+[masks]
+path = "data/masks"
+type = "directory"
+description = "CheckV masks generated to filter sequences based on completeness and contamination criteria."
+
+
+[modalities]
+path = "data/modalities"
+type = "directory"
+description = "Versioned data modalities used as inputs for downstream classification and machine learning workflows."
+
+
+# ============================================================
+# Modality version 1.0
+# ============================================================
+
+[modalities.v1_0]
+path = "data/modalities/1.0"
+version = "1.0"
+type = "directory"
+
+
+[modalities.v1_0.raw]
+path = "raw"
+type = "directory"
+description = "Raw modality files stored separately for each sample before merging and preprocessing."
+
+
+[modalities.v1_0.raw_merged]
+path = "raw-merged"
+type = "directory"
+description = "Merged raw modality data combined into unified files containing all samples."
+
+
+[modalities.v1_0.preprocessed]
+path = "preprocessed"
+type = "directory"
+description = "Preprocessed modality data."
+
+
+[modalities.v1_0.features]
+path = "features"
+type = "directory"
+description = "Extracted feature representations used as input for classifier training and prediction."
+
+
+# ============================================================
+# Modality version 2.0
+# ============================================================
+
+[modalities.v2_0]
+path = "data/modalities/2.0"
+version = "2.0"
+type = "directory"
+
+
+[modalities.v2_0.raw]
+path = "raw"
+type = "directory"
+description = "Raw modality files stored separately for each sample before merging and preprocessing."
+
+
+[modalities.v2_0.raw_merged]
+path = "raw-merged"
+type = "directory"
+description = "Merged raw modality data combined into unified files containing all samples."
+
+
+[modalities.v2_0.preprocessed]
+path = "preprocessed"
+type = "directory"
+description = "Preprocessed modality data."
+
+
+[modalities.v2_0.features]
+path = "features"
+type = "directory"
+description = "Extracted feature representations used as input for classifier training and prediction."

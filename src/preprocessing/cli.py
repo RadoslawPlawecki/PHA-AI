@@ -5,6 +5,7 @@
 import questionary
 import pandas as pd
 from pathlib import Path
+from config.loader import load_config
 
 tool_map = {
     "geN": "genomad",
@@ -71,3 +72,44 @@ def ask_normalization_method() -> str:
     print(f"[INFO] Selected normalization: {method}")
     return method
     
+
+from pathlib import Path
+
+
+class ModalityFileSelector:
+    def __init__(self, modality: str, config_path="project/config.toml"):
+        self.modality = modality
+        self.config = load_config(config_path)
+        self.modalities_config = self.config["modalities"]
+
+    def select(self) -> Path:
+        version = self.select_version()
+        raw_merged = self._get_raw_merged_path(version)
+        modality_dir = raw_merged / self.modality
+        return self.select_file(modality_dir)
+
+    def select_version(self):
+        versions = [key for key in self.config["modalities"] if key.startswith("v")]
+        return questionary.select(
+            "Select modality version:",
+            choices=versions
+        ).ask()
+
+    def _get_raw_merged_path(self, version):
+        version_config = (self.modalities_config[version])
+        root = Path(version_config["path"])
+        raw_merged = (root / version_config["raw_merged"]["path"])
+        return raw_merged
+
+    def select_file(self, directory: Path):
+        files = sorted(directory.glob("*.csv"))
+        if len(files) == 1:
+            return files[0]
+        selected = questionary.select(
+            f"Select {self.modality} file:",
+            choices=[
+                file.name
+                for file in files
+            ]
+        ).ask()
+        return directory / selected

@@ -31,7 +31,8 @@ class CherryFeatureExtractor:
         df = df[df["ncbi_domain"] == "Bacteria"]
         df = df[df["ncbi_genus"] != "NAmissing"]
         df = df[df["ncbi_species"] != "bacterium"]
-        df = df[['Accession', 'ncbi_genus', 'ncbi_species', 'gtdb_genus', 'gtdb_species']]
+        df = df[['Accession', 'ncbi_phylum', 'ncbi_class', 'ncbi_order', 
+                 'ncbi_family', 'ncbi_genus', 'ncbi_species']]
         if out_path:
             df.to_csv(out_path, sep=';', index=False)
         return df

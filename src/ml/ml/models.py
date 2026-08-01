@@ -18,6 +18,7 @@ class SingleOmicModel(BaseEstimator, ClassifierMixin):
 
     def fit(self, X, y):
         self.model_ = clone(self.model)
+        X_train, y_train = X, y
         if self.use_smote:
             k = min(self.smote_k, np.min(np.bincount(y)) - 1)
             if k > 0:

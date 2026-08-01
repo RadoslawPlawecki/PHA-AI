@@ -79,7 +79,8 @@ class PhavipFeatureExtractor:
             (df["coverage"] >= self.min_coverage) &
             (df["pident"] / 100 >= self.min_pident)
         ]
-        df["Category"] = self.categorize_annotations(df["Annotation"])
+        if "Category" not in df.columns:
+            df["Category"] = self.categorize_annotations(df["Annotation"])
         if out_path:
             df[["Accession", "Annotation", "Category"]].to_csv(out_path, sep=';', index=False)
         return df
