@@ -1,17 +1,29 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bio-pipeline-tools"
+name = "phantom"
 version = "0.1.0"
+description = "Phageome-based disease classification tool for multiclass prediction."
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-    "pandas",
-    "numpy"
+    "catboost>=1.2.10"
+    "imbalanced_learn>=0.14.1",
+    "imblearn>=0.0",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.1",
+    "optuna>=4.9.0",
+    "pandas>=3.0.5",
+    "questionary>=2.1.1",
+    "scikit_bio>=0.7.3",
+    "scikit_learn>=1.9.0",
+    "scipy>=1.18.0",
+    "seaborn>=0.13.2",
+    "tqdm>=4.67.3",
+    "xgboost>=3.3.0"
 ]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

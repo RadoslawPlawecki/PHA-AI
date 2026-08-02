@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional
 from .build_features import build_features
 from ..utils import split_taxonomy, apply_mask, load_file
-from ..cli import ask_column, ask_mask_file
+from phantom.cli.prompts import FeatureExtractionPrompts
 
 
 class CherryFeatureExtractor:
@@ -41,7 +41,7 @@ class CherryFeatureExtractor:
         out_root.mkdir(parents=True, exist_ok=True)
         df = load_file("Accession", in_root)
         df = df.copy()
-        mask_path = ask_mask_file(in_root)
+        mask_path = FeatureExtractionPrompts.ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
         filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/cherry/{in_root.stem[:3]}_ChV_CHR_M_PP.csv")
         final_df = self._get_feat(filtered_df)
@@ -50,6 +50,6 @@ class CherryFeatureExtractor:
         return final_df
 
     def _get_feat(self, df: pd.DataFrame) -> pd.DataFrame:
-        col = ask_column(df)
+        col = FeatureExtractionPrompts.ask_column(df)
         return build_features(df=df, feature_col=col, min_patients=self.min_patients)
         

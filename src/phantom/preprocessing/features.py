@@ -5,8 +5,9 @@
 import pandas as pd
 
 
-def build_matrix(df: pd.DataFrame, feature_col: str, id_col: str, binary: bool = True, min_patients: int = 2) -> pd.DataFrame:
-        matrix = pd.crosstab(df[id_col], df[feature_col])
+def build_matrix(df: pd.DataFrame, feature_col: str, binary: bool = True, min_patients: int = 2) -> pd.DataFrame:
+        df["id"] = df["Accession"].str.split("_").str[0]
+        matrix = pd.crosstab(df["id"], df[feature_col])
         if binary:
             matrix = (matrix > 0).astype(int)
         vc_mask = matrix.sum(axis=0) >= min_patients

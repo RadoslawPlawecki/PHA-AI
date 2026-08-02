@@ -8,15 +8,15 @@ import argparse
 from datetime import datetime
 from scipy.spatial.distance import pdist, squareform
 from sklearn.manifold import MDS
-from ml.data.config import MdsConfig
-from ml.data.data_aligner import DataAligner
-from ml.data.data_loader import DataLoader
-from ml.data.preprocessor import NearZeroVarianceFilter
-from ml.analytics.logger import Logger
-from ml.analytics.reporter import ReportFormatter
-from ml.analytics.visualizer import Visualizer
-from ml.analytics.saver import ExperimentSaver
-from ml.ml.evaluator import EvaluatorUl
+from phantom.classifier.data.config import MdsConfig
+from phantom.classifier.data.data_aligner import DataAligner
+from phantom.classifier.data.data_loader import DataLoader
+from phantom.classifier.data.preprocessor import NearZeroVarianceFilter
+from phantom.classifier.analytics.logger import Logger
+from phantom.classifier.analytics.reporter import ReportFormatter
+from phantom.classifier.analytics.visualizer import Visualizer
+from phantom.classifier.analytics.saver import ExperimentSaver
+from phantom.classifier.ml.evaluator import EvaluatorUl
 
 
 class UnsupervisedClassifier:

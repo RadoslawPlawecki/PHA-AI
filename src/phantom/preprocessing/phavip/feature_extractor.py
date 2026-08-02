@@ -6,8 +6,8 @@ import pandas as pd
 import re
 from pathlib import Path
 from typing import Optional
-from ..utils import load_file, apply_mask
-from ..cli import ask_mask_file
+from phantom.preprocessing.utils import load_file, apply_mask
+from phantom.cli.prompts import FeatureExtractionPrompts
 
 
 class PhavipFeatureExtractor:
@@ -111,7 +111,7 @@ class PhavipFeatureExtractor:
         out_root.mkdir(parents=True, exist_ok=True)
         df = load_file("Genome", in_root)
         df = df.copy()
-        mask_path = ask_mask_file(in_root)
+        mask_path = FeatureExtractionPrompts.ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
         filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/phavip/{in_root.stem[:3]}_ChV_PHA_ORFs_PHV_M_PP.csv")
         category_df = self.calculate_category_ratios(filtered_df)

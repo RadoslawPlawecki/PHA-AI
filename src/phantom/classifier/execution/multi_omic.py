@@ -2,28 +2,28 @@
 @author: Radosław Pławecki
 """
 
-from ml.data.config import MultiOmicConfig
-from ml.data.data_loader import DataLoader
-from ml.data.data_aligner import DataAligner
-from ml.data.preprocessor import NearZeroVarianceFilter
-from ml.analytics.logger import Logger
-from ml.analytics.reporter import ReportFormatter
-from ml.analytics.saver import ExperimentSaver
-from ml.ml.models import (
+from phantom.classifier.data.config import MultiOmicConfig
+from phantom.classifier.data.data_loader import DataLoader
+from phantom.classifier.data.data_aligner import DataAligner
+from phantom.classifier.data.preprocessor import NearZeroVarianceFilter
+from phantom.classifier.analytics.logger import Logger
+from phantom.classifier.analytics.reporter import ReportFormatter
+from phantom.classifier.analytics.saver import ExperimentSaver
+from phantom.classifier.ml.models import (
     MultiOmicModel,
     get_rf_model,
     get_catboost_model,
     get_xgb_model,
 )
-from ml.ml.optimizer import LateFusionWeightOptimizer
-from ml.ml.validators import (
+from phantom.classifier.ml.optimizer import LateFusionWeightOptimizer
+from phantom.classifier.ml.validators import (
     EarlyFusionLOOCVValidator,
     EarlyFusionRepeatedCVValidator,
     LateFusionLOOCVValidator,
     LateFusionRepeatedCVValidator,
     CVResults,
 )
-from ml.ml.evaluator import EvaluatorSl
+from phantom.classifier.ml.evaluator import EvaluatorSl
 import os
 import pandas as pd
 import argparse

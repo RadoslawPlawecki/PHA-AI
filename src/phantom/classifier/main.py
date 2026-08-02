@@ -2,14 +2,14 @@
 @author: Radosław Pławecki
 """
 
-from ml.data.config import (
+from phantom.classifier.data.config import (
     SingleOmicConfig,
     MultiOmicConfig,
     MdsConfig
 )
-from ml.execution.single_omic import SingleOmicClassifier
-from ml.execution.multi_omic import MultiOmicClassifier
-from ml.execution.unsupervised_classifier import UnsupervisedClassifier
+from phantom.classifier.execution.single_omic import SingleOmicClassifier
+from phantom.classifier.execution.multi_omic import MultiOmicClassifier
+from phantom.classifier.execution.unsupervised_classifier import UnsupervisedClassifier
 
 class ExperimentRunner:
     def __init__(self, config):

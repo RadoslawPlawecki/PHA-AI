@@ -3,7 +3,7 @@
 """
 
 import matplotlib.pyplot as plt
-from plots.plots_formatting import use_latex
+from phantom.visualization.plots_formatting import use_latex
 
 
 class Visualizer:

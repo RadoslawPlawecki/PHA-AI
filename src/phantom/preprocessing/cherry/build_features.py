@@ -5,7 +5,7 @@
 import pandas as pd
 import re
 from typing import Optional
-from ..features import build_matrix
+from phantom.preprocessing.features import build_matrix
 
 
 def build_features(df: pd.DataFrame, min_patients: int, feature_col: str) -> pd.DataFrame:
@@ -22,4 +22,4 @@ def _filter_accessions(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _build_feature_matrix(df: pd.DataFrame, min_patients: int, feature_col: str):
-    return build_matrix(df=df, feature_col=feature_col, id_col="id", binary=True, min_patients=min_patients)
+    return build_matrix(df=df, feature_col=feature_col, binary=True, min_patients=min_patients)

@@ -6,14 +6,15 @@ import pandas as pd
 from pathlib import Path
 from typing import Optional
 from .build_features import build_features
-from ..utils import format_accession, apply_mask, load_file
-from ..cli import ask_column, ask_mask_file
+from phantom.preprocessing.utils import format_accession, apply_mask, load_file
+from phantom.cli.prompts import FeatureExtractionPrompts
 
 
 class PhagcnFeatureExtractor:
-    def __init__(self, min_phagcn_score: float = 0.5, min_patients: int = 4):
+    def __init__(self, min_phagcn_score: float = 0.5, min_patients: int = 4, binary: bool = True):
         self.min_phagcn_score = min_phagcn_score
         self.min_patients = max(1, min_patients)
+        self.binary = binary
 
     def preprocess(self, df: pd.DataFrame, out_path: Optional[str] = None) -> pd.DataFrame:
         df = df.copy()
@@ -35,22 +36,23 @@ class PhagcnFeatureExtractor:
         df = pd.concat([df, taxonomy_df], axis=1)
         df = df[['Accession', 'genus']]
         if out_path:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
             df.to_csv(out_path, sep=';', index=False)
         return df
 
-    def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
-        out_root.mkdir(parents=True, exist_ok=True)
-        df = load_file("Accession", in_root)
-        df = df.copy()
-        mask_path = ask_mask_file(in_root)
-        df = apply_mask(df, mask_path)
-        filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/phagcn/{in_root.stem[:3]}_ChV_PGN_M_PP.csv")
-        final_df = self._get_feat(filtered_df)
-        out_path = out_root / f"{in_root.stem[:3]}_PGN_FEAT.csv"
-        final_df.to_csv(out_path, sep=';', index=False)
+    def process_file(self, in_file: Path, preprocessed_out_path: Path,
+                     features_out_path: Path, feature_col: str = "genus", 
+                     mask_path: Optional[str] = None) -> pd.DataFrame:
+        df = load_file(in_file)
+        if mask_path:
+            df = apply_mask(df, mask_path)
+        filtered_df = self.preprocess(df, out_path=preprocessed_out_path)
+        final_df = self._get_feat(filtered_df, feature_col)
+        features_out_path.parent.mkdir(parents=True, exist_ok=True)
+        final_df.to_csv(features_out_path, sep=';', index=False)
         return final_df
 
-    def _get_feat(self, df: pd.DataFrame) -> pd.DataFrame:
-        col = ask_column(df)
-        return build_features(df=df, feature_col=col, min_patients=self.min_patients)
-        
+    def _get_feat(self, df: pd.DataFrame, feature_col: str) -> pd.DataFrame:
+        return build_features(df=df, feature_col=feature_col,
+                              min_patients=self.min_patients, 
+                              binary=self.binary)

@@ -8,14 +8,17 @@ import tempfile
 import pandas as pd
 import numpy as np
 from typing import Callable, Any
-from ml.data.data_loader import DataLoader
-from ml.data.preprocessor import NearZeroVarianceFilter
-from ml.ml.models import get_catboost_model
-from ml.ml.validators import LOOCVValidator
-from ml.ml.evaluator import EvaluatorSl
-from ml.ml.models import MultiOmicModel
-from ml.ml.validators import LateFusionLOOCVValidator
-from ml.ml.evaluator import EvaluatorSl
+from phantom.classifier.data.data_loader import DataLoader
+from phantom.classifier.data.preprocessor import NearZeroVarianceFilter
+from .models import (
+    get_catboost_model,
+    MultiOmicModel,
+)
+from .validators import (
+    LOOCVValidator,
+    LateFusionLOOCVValidator,
+)
+from .evaluator import EvaluatorSl
 
 
 class LateFusionWeightOptimizer:

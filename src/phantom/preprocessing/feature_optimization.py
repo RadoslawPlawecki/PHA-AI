@@ -3,22 +3,23 @@
 """
 
 import argparse
+from functools import partial
+from pathlib import Path
+
 import optuna
 import pandas as pd
-from pathlib import Path
-from functools import partial
 
-from .features import build_matrix
+from phantom.cli.prompts import ModalityFileSelector
+from phantom.classifier.ml.models import get_catboost_model, get_rf_model, get_xgb_model
+from phantom.classifier.ml.optimizer import FeatureExtractionOptimizer
+from phantom.classifier.ml.validators import LOOCVValidator, RepeatedCVValidator
+from phantom.preprocessing import (
+    CherryFeatureExtractor,
+    PhagcnFeatureExtractor,
+    PhavipFeatureExtractor,
+)
+from phantom.preprocessing.features import build_matrix
 from .utils import format_accession, load_file
-from .cli import ModalityFileSelector
-
-from preprocessing.phagcn.feature_extractor import PhagcnFeatureExtractor
-from preprocessing.cherry.feature_extractor import CherryFeatureExtractor
-from preprocessing.phavip.feature_extractor import PhavipFeatureExtractor
-
-from ml.ml.optimizer import FeatureExtractionOptimizer
-from ml.ml.models import get_catboost_model, get_rf_model, get_xgb_model
-from ml.ml.validators import LOOCVValidator, RepeatedCVValidator
 
 
 model_factories = {
@@ -76,9 +77,8 @@ def phagcn_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
     min_patients = trial.suggest_int("min_patients", 1, 10)  
     extractor = PhagcnFeatureExtractor()
     df = extractor.preprocess(df)
-    df["id"] = df["Accession"].str.split("_").str[0]
     feature_matrix = build_matrix(
-        df=df, feature_col="genus", id_col="id",
+        df=df, feature_col="genus",
         binary=binary_repr, min_patients=min_patients
     )
     return optimizer.run(feature_matrix)
@@ -87,7 +87,7 @@ def phagcn_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
 def run_phagcn(args):
     selector = ModalityFileSelector(modality="phagcn")
     path = selector.select()
-    df = load_file("Accession", path)
+    df = load_file(path)
     bound_objective = partial(phagcn_objective, df=df)
     search_space = {
         "binary": [True, False],
@@ -116,9 +116,8 @@ def cherry_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
     ])
     extractor = CherryFeatureExtractor()
     df = extractor.preprocess(df)
-    df["id"] = df["Accession"].str.split("_").str[0]
     feature_matrix = build_matrix(
-        df=df, feature_col=feature_col, id_col="id",
+        df=df, feature_col=feature_col,
         binary=binary_repr, min_patients=min_patients
     )
     return optimizer.run(feature_matrix)
@@ -127,7 +126,7 @@ def cherry_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
 def run_cherry(args):
     selector = ModalityFileSelector(modality="cherry")
     path = selector.select()
-    df = load_file("Accession", path)
+    df = load_file(path)
     bound_objective = partial(cherry_objective, df=df)
     search_space = {
         "binary": [True, False],
@@ -154,7 +153,6 @@ def phavip_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
     min_pident = trial.suggest_float("min_pident", 0.3, 1.0)
     extractor = PhavipFeatureExtractor(min_coverage=min_coverage, min_pident=min_pident)
     df = extractor.preprocess(df)
-    df["id"] = df["Accession"].str.split("_").str[0]
     if df.empty:
         return 0.0
     feature_matrix = extractor.calculate_category_ratios(df)
@@ -166,7 +164,7 @@ def phavip_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
 def run_phavip(args):
     selector = ModalityFileSelector(modality="phavip")
     path = selector.select()
-    df = load_file("Genome", path)
+    df = load_file(path, "Genome")
     print("[INFO] Precomputing Regex categories to accelerate Optuna trials...")
     extractor = PhavipFeatureExtractor()
     df["Category"] = extractor.categorize_annotations(df["Annotation"])
