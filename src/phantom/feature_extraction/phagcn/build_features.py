@@ -5,7 +5,7 @@
 import pandas as pd
 import re
 from typing import Optional
-from phantom.preprocessing.features import build_matrix
+from phantom.feature_extraction.features import build_matrix
 
 
 def build_features(df: pd.DataFrame, feature_col: str, min_patients: int, binary: bool) -> pd.DataFrame:

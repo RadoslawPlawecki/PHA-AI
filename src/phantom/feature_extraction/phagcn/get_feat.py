@@ -5,7 +5,7 @@
 from pathlib import Path
 from .feature_extractor import PhagcnFeatureExtractor
 from phantom.cli.prompts import FeatureExtractionPrompts, ModalityFileSelector
-from phantom.preprocessing.utils import load_file
+from phantom.feature_extraction.utils import load_file
 import logging
 import sys
 

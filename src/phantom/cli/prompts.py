@@ -5,12 +5,13 @@
 import questionary
 import pandas as pd
 from pathlib import Path
-from phantom.config.loader import load_config
+from phantom.config.loader import ConfigLoader
 
 
 class FeatureExtractionPrompts:
     def __init__(self, config: dict | None = None):
-        self.config = config if config is not None else load_config()
+        loader = ConfigLoader()
+        self.config = config if config is not None else loader.load()
         self.tool_map = self.config.get("tools", {})
         mask_path_str = self.config.get("masks", {}).get("path")
         self.mask_root = Path(mask_path_str) if mask_path_str else None

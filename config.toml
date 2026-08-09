@@ -21,18 +21,21 @@ description = "Metagenome assemblies generated using the MEGAHIT assembler."
 path = "data/genomad"
 type = "directory"
 description = "Viral sequence predictions and annotations generated using geNomad."
+viral_fna = "*_assembly.contigs_virus.fna"
 
 
 [vibrant]
 path = "data/vibrant"
 type = "directory"
 description = "VIBRANT-based viral sequence annotations and auxiliary files."
+viral_fna = "*_assembly.contigs.phages_combined.fna"
 
 
 [virsorter2]
 path = "data/virsorter2"
 type = "directory"
 description = "Viral sequence predictions and annotations generated using VirSorter2."
+viral_fna = "final-viral-combined.fa"
 
 
 [genomes]

@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 from typing import Optional
 from .build_features import build_features
-from phantom.preprocessing.utils import format_accession, apply_mask, load_file
+from phantom.feature_extraction.utils import format_accession, apply_mask, load_file
 from phantom.cli.prompts import FeatureExtractionPrompts
 
 

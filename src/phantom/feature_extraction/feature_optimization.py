@@ -10,15 +10,15 @@ import optuna
 import pandas as pd
 
 from phantom.cli.prompts import ModalityFileSelector
-from phantom.classifier.ml.models import get_catboost_model, get_rf_model, get_xgb_model
-from phantom.classifier.ml.optimizer import FeatureExtractionOptimizer
-from phantom.classifier.ml.validators import LOOCVValidator, RepeatedCVValidator
-from phantom.preprocessing import (
+from phantom.classification.ml.models import get_catboost_model, get_rf_model, get_xgb_model
+from phantom.classification.ml.optimizer import FeatureExtractionOptimizer
+from phantom.classification.ml.validators import LOOCVValidator, RepeatedCVValidator
+from phantom.feature_extraction import (
     CherryFeatureExtractor,
     PhagcnFeatureExtractor,
     PhavipFeatureExtractor,
 )
-from phantom.preprocessing.features import build_matrix
+from phantom.feature_extraction.features import build_matrix
 from .utils import format_accession, load_file
 
 

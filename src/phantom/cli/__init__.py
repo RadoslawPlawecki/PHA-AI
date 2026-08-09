@@ -1,3 +1,7 @@
 from .prompts import FeatureExtractionPrompts
+from .preprocessing import PreprocessingPrompts
 
-__all__ = ["FeatureExtractionPrompts"]
+__all__ = [
+    "PreprocessingPrompts",
+    "FeatureExtractionPrompts"
+]
