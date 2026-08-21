@@ -50,120 +50,100 @@ type = "directory"
 description = "Genome quality assessment results generated using CheckV."
 
 
-[post_checkv]
-path = "data/post-checkv"
-type = "directory"
-description = "Viral genomes after CheckV quality filtering."
-
-
 [masks]
 path = "data/masks"
 type = "directory"
 description = "CheckV masks generated to filter sequences based on completeness and contamination criteria."
 
 
-[modalities]
-path = "data/modalities"
+[features]
+path = "data/features"
 type = "directory"
-description = "Versioned data modalities used as inputs for downstream classification and machine learning workflows."
+description = "Versioned data features used as inputs for downstream classification and machine learning workflows."
 
 
-# ============================================================
-# Modality version 1.0
-# ============================================================
-
-[modalities.v1_0]
-path = "data/modalities/1.0"
+[features.v1_0]
+path = "data/features/1.0"
 version = "1.0"
 type = "directory"
 
 
-[modalities.v1_0.raw]
+[features.v1_0.raw]
 path = "raw"
 type = "directory"
-description = "Raw modality files stored separately for each sample before merging and preprocessing."
+description = "Raw feature files stored separately for each sample before merging and preprocessing."
 
 
-[modalities.v1_0.raw_merged]
+[features.v1_0.raw_merged]
 path = "raw-merged"
 type = "directory"
-description = "Merged raw modality data combined into unified files containing all samples."
+description = "Merged raw feature data combined into unified files containing all samples."
 
 
-[modalities.v1_0.preprocessed]
+[features.v1_0.preprocessed]
 path = "preprocessed"
 type = "directory"
-description = "Preprocessed modality data."
+description = "Preprocessed feature data."
 
 
-[modalities.v1_0.features]
-path = "features"
+[features.v1_0.extracted]
+path = "extracted"
 type = "directory"
 description = "Extracted feature representations used as input for classifier training and prediction."
 
 
-# ============================================================
-# Modality version 2.0
-# ============================================================
-
-[modalities.v2_0]
-path = "data/modalities/2.0"
+[features.v2_0]
+path = "data/features/2.0"
 version = "2.0"
 type = "directory"
 
 
-[modalities.v2_0.raw]
+[features.v2_0.raw]
 path = "raw"
 type = "directory"
-description = "Raw modality files stored separately for each sample before merging and preprocessing."
+description = "Raw feature files stored separately for each sample before merging and preprocessing."
 
 
-[modalities.v2_0.raw_merged]
+[features.v2_0.raw_merged]
 path = "raw-merged"
 type = "directory"
-description = "Merged raw modality data combined into unified files containing all samples."
+description = "Merged raw feature data combined into unified files containing all samples."
 
 
-[modalities.v2_0.preprocessed]
+[features.v2_0.preprocessed]
 path = "preprocessed"
 type = "directory"
-description = "Preprocessed modality data."
+description = "Preprocessed feature data."
 
 
-[modalities.v2_0.features]
-path = "features"
+[features.v2_0.extracted]
+path = "extracted"
 type = "directory"
 description = "Extracted feature representations used as input for classifier training and prediction."
 
-# ============================================================
-# Modality version 3.0
-# ============================================================
 
-[modalities.v3_0]
-path = "data/modalities/3.0"
+
+[features.v3_0]
+path = "data/features/3.0"
 version = "3.0"
 type = "directory"
 
-
-[modalities.v3_0.raw]
+[features.v3_0.raw]
 path = "raw"
 type = "directory"
-description = "Raw modality files stored separately for each sample before merging and preprocessing."
+description = "Raw feature files stored separately for each sample before merging and preprocessing."
 
-
-[modalities.v3_0.raw_merged]
+[features.v3_0.raw_merged]
 path = "raw-merged"
 type = "directory"
-description = "Merged raw modality data combined into unified files containing all samples."
+description = "Merged raw feature data combined into unified files containing all samples."
 
-
-[modalities.v3_0.preprocessed]
+[features.v3_0.preprocessed]
 path = "preprocessed"
 type = "directory"
-description = "Preprocessed modality data."
+description = "Preprocessed feature data."
 
-
-[modalities.v3_0.features]
-path = "features"
+[features.v3_0.extracted]
+path = "extracted"
 type = "directory"
 description = "Extracted feature representations used as input for classifier training and prediction."

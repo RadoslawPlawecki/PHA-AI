@@ -1,5 +1,5 @@
 """
-Contains CLI prompts used during the file preprocessing workflow.
+Contains CLI prompts used during the raw data preprocessing workflow.
 """
 
 import questionary

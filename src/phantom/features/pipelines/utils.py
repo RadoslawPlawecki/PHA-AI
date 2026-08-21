@@ -1,5 +1,6 @@
 """
-@author: Radosław Pławecki
+Shared IO helpers used when loading and masking raw-merged feature data
+before it is handed to a per-tool pipeline.
 """
 
 import pandas as pd

@@ -2,7 +2,7 @@ import sys
 import questionary
 
 from phantom.preprocessing.controller import PreprocessingController
-# from phantom.cli.features import run_features
+from phantom.features.controller import FeatureController
 # from phantom.cli.classifier import run_classifier
 
 def main():
@@ -12,7 +12,7 @@ def main():
             "Which pipeline step would you like to run?",
             choices=[
                 "1) Preprocessing",
-                "2) Feature extraction",
+                "2) Features",
                 "3) Classifier",
                 questionary.Separator(),
                 "Exit"
@@ -28,10 +28,9 @@ def main():
             PreprocessingController().run()
         elif step.startswith("2)"):
             print("\n" + "="*40)
-            print("STEP 2: FEATURE EXTRACTION")
+            print("STEP 2: FEATURES")
             print("="*40)
-            print("Module pending implementation...")
-            # run_features()
+            FeatureController().run()
         elif step.startswith("3)"):
             print("\n" + "="*40)
             print("STEP 3: CLASSIFIER")

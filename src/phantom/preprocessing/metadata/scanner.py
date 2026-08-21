@@ -9,6 +9,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
 
+from phantom.config.loader import ConfigLoader
+
 TIME_RE = re.compile(r"\[(\d{2}:\d{2}:\d{2})\]")
 VIBRANT_RE = re.compile(r"Runtime:\s*([0-9.]+)\s*minutes")
 
@@ -140,11 +142,12 @@ def scan_metadata(config: dict) -> pd.DataFrame:
     config are ignored during this step due to the specific nature of various 
     outputs.
     """
-    vib_path = config.get("vibrant", {}).get("path", "data/vibrant")
-    vs2_path = config.get("virsorter2", {}).get("path", "data/virsorter2")
-    gen_path = config.get("genomad", {}).get("path", "data/genomad")
-    megahit_path = config.get("megahit", {}).get("path", "data/megahit")
-    checkv_base = Path(config.get("checkv", {}).get("path", "data/checkv"))
+    resolve = ConfigLoader.resolve_data_path
+    vib_path = resolve(config.get("vibrant", {}).get("path", "data/vibrant"))
+    vs2_path = resolve(config.get("virsorter2", {}).get("path", "data/virsorter2"))
+    gen_path = resolve(config.get("genomad", {}).get("path", "data/genomad"))
+    megahit_path = resolve(config.get("megahit", {}).get("path", "data/megahit"))
+    checkv_base = resolve(config.get("checkv", {}).get("path", "data/checkv"))
 
     vib_root = build_index(vib_path)
     vs2_root = build_index(vs2_path)

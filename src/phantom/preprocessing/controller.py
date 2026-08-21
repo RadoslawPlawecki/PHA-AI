@@ -21,7 +21,7 @@ class PreprocessingController:
         meta_path = self.config.get("genomes", {}).get(
             "metadata_path", "data/genomes/genome_metadata.csv"
         )
-        self.meta_mapper = MetadataManager(Path(meta_path))
+        self.meta_mapper = MetadataManager(ConfigLoader.resolve_data_path(meta_path))
 
     def run(self):
         while True:

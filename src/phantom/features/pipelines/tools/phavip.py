@@ -1,16 +1,18 @@
 """
-@author: Radosław Pławecki
+Per-tool feature pipeline for PhaVIP (functional annotation) output:
+cleaning/filtering (used by the preprocessing step) and feature-matrix
+construction (used by the extraction step).
 """
 
 import pandas as pd
 import re
-from pathlib import Path
-from typing import Optional
-from phantom.feature_extraction.utils import load_file, apply_mask
-from phantom.cli.prompts import FeatureExtractionPrompts
 
 
-class PhavipFeatureExtractor:
+class PhavipFeaturePipeline:
+    # Derives its own functional categories from Annotation text; needs no
+    # interactively chosen column (see build_feature_matrix).
+    NEEDS_FEATURE_COLUMN = False
+
     CATEGORY_PATTERNS = {
         "structural":
         r"capsid|head|tail|portal|fiber|baseplate|"
@@ -71,7 +73,7 @@ class PhavipFeatureExtractor:
             for k, v in self.CATEGORY_PATTERNS.items()
         }
 
-    def preprocess(self, df: pd.DataFrame, out_path: Optional[str] = None) -> pd.DataFrame:
+    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df["coverage"] = pd.to_numeric(df["coverage"], errors="coerce")
         df["pident"] = pd.to_numeric(df["pident"], errors="coerce")
@@ -81,9 +83,7 @@ class PhavipFeatureExtractor:
         ]
         if "Category" not in df.columns:
             df["Category"] = self.categorize_annotations(df["Annotation"])
-        if out_path:
-            df[["Accession", "Annotation", "Category"]].to_csv(out_path, sep=';', index=False)
-        return df
+        return df[["Accession", "Annotation", "Category"]]
 
     def categorize_annotations(self, annotations: pd.Series) -> pd.Series:
         result = pd.Series("other_function", index=annotations.index)
@@ -93,29 +93,12 @@ class PhavipFeatureExtractor:
             result.loc[mask] = category
         return result
 
-    def calculate_category_ratios(self, df: pd.DataFrame, save_path: Optional[Path] = None) -> pd.DataFrame:
+    def build_feature_matrix(self, df: pd.DataFrame, feature_col: str | None = None) -> pd.DataFrame:
+        # feature_col is unused: categories are fixed (see CATEGORY_PATTERNS),
+        # not interactively chosen. Kept for a uniform pipeline interface.
         df = df.copy()
         df["id"] = df["Accession"].str.split("_").str[0]
         counts = df.groupby(["id", "Category"]).size().unstack(fill_value=0)
         ratios = counts.div(counts.sum(axis=1), axis=0).round(4)
-        ratios.columns = [
-            f"{c.lower()}_ratio"
-            for c in ratios.columns
-        ]
-        result = ratios.reset_index()
-        if save_path:
-            result.to_csv(save_path, sep=';', index=False)
-        return result
-
-    def process_file(self, in_root: Path, out_root: Path) -> pd.DataFrame:
-        out_root.mkdir(parents=True, exist_ok=True)
-        df = load_file("Genome", in_root)
-        df = df.copy()
-        mask_path = FeatureExtractionPrompts.ask_mask_file(in_root)
-        df = apply_mask(df, mask_path)
-        filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/phavip/{in_root.stem[:3]}_ChV_PHA_ORFs_PHV_M_PP.csv")
-        category_df = self.calculate_category_ratios(filtered_df)
-        out_path = out_root / f"{in_root.stem[:3]}_PHV_FEAT.csv"
-        category_df.to_csv(out_path, sep=';', index=False)
-        return category_df
-        
+        ratios.columns = [f"{c.lower()}_ratio" for c in ratios.columns]
+        return ratios.reset_index()

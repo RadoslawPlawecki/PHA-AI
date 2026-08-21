@@ -21,6 +21,7 @@ for tool_path in data/phanotate/orfs/*/; do
             --dbdir phabox_db_v2_2/ \
             --outpth "$phb" \
             --contigs "$file" \
+            --len 0 \
             --threads 40
         else
             echo "  Skipping PhaBOX2 (exists)"

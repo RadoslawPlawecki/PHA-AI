@@ -8,12 +8,14 @@ import shutil
 from pathlib import Path
 import pandas as pd
 
+from phantom.config.loader import ConfigLoader
+
 
 class GenomeCollector:
     def __init__(self, config: dict, meta_manager):
         self.config = config
         self.tools_map = self.config.get("tools", {})
-        self.base_dest = Path(self.config["genomes"]["path"])
+        self.base_dest = ConfigLoader.resolve_data_path(self.config["genomes"]["path"])
         self.meta_manager = meta_manager
 
     def _is_valid_format(self, folder_name: str, tool_abbr: str) -> bool:
@@ -26,7 +28,7 @@ class GenomeCollector:
             tool_config = self.config.get(tool_name)
             if not tool_config:
                 continue
-            root = Path(tool_config["path"])
+            root = ConfigLoader.resolve_data_path(tool_config["path"])
             for file in root.rglob(tool_config["viral_fna"]):
                 parts = file.relative_to(root).parts
                 subfolder = parts[0] if len(parts) > 1 else "root"
@@ -43,7 +45,7 @@ class GenomeCollector:
             tool_config = self.config.get(tool_name)
             if not tool_config: 
                 continue
-            root = Path(tool_config["path"])
+            root = ConfigLoader.resolve_data_path(tool_config["path"])
             dest_dir = self.base_dest / tool_name
             dest_dir.mkdir(parents=True, exist_ok=True)
             sample_counter = 1
