@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for tool_path in data/post-checkv/*/; do
+for tool_path in data/genomes/*/; do
     tool=$(basename "$tool_path")
 
     mkdir -p \

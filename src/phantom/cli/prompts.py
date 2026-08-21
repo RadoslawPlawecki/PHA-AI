@@ -134,7 +134,7 @@ class FeatureExtractionPrompts:
 class ModalityFileSelector:
     def __init__(self, modality: str, config_path="project/config.toml"):
         self.modality = modality
-        self.config = load_config(config_path)
+        self.config = ConfigLoader().load()
         self.modalities_config = self.config["modalities"]
         self.selected_version = None
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in data/metagenomes/*.fa; do
+for file in data/megahit/*.fa; do
     filename=$(basename "$file")
 
     # extract SX from 001_SX_...

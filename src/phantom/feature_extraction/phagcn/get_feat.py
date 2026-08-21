@@ -25,7 +25,7 @@ def run_feature_extraction():
         preprocessed_dir.mkdir(parents=True, exist_ok=True)
         features_dir.mkdir(parents=True, exist_ok=True)
         prefix = in_file.stem[:3]
-        preprocessed_out = preprocessed_dir / f"{prefix}_ChV_PGN_M_PP.csv"
+        preprocessed_out = preprocessed_dir / f"{prefix}_PGN_M_PP.csv"
         features_out = features_dir / f"{prefix}_PGN_FEAT.csv"
         prompts = FeatureExtractionPrompts()
         mask_path = prompts.ask_mask_file(in_file)

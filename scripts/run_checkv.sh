@@ -24,8 +24,8 @@ for file in data/genomes/vibrant/*.fna; do
 done
 
 for file in data/genomes/virsorter2/*.fna; do
-    filename=$(basename "$file")      # S1_VIB.fna
-    base="${filename%.fna}"           # S1_VIB
+    filename=$(basename "$file")      # S1_VS2.fna
+    base="${filename%.fna}"           # S1_VS2
     outdir="data/checkv/virsorter2/${base}_ChV"
 
     # skip if already exists
@@ -47,8 +47,8 @@ for file in data/genomes/virsorter2/*.fna; do
 done
 
 for file in data/genomes/genomad/*.fna; do
-    filename=$(basename "$file")      # S1_VIB.fna
-    base="${filename%.fna}"           # S1_VIB
+    filename=$(basename "$file")      # S1_geN.fna
+    base="${filename%.fna}"           # S1_geN
     outdir="data/checkv/genomad/${base}_ChV"
 
     # skip if already exists

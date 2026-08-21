@@ -7,8 +7,8 @@ from .feature_extractor import CherryFeatureExtractor
 
 extractor = CherryFeatureExtractor()
 
-in_root = Path("data/modalities/2.0/raw-merged/cherry")
-out_root = Path("data/modalities/2.0/features/cherry")
+in_root = Path("data/modalities/3.0/raw-merged/cherry")
+out_root = Path("data/modalities/3.0/features/cherry")
 
 for file in in_root.iterdir():
     final_df = extractor.process_file(

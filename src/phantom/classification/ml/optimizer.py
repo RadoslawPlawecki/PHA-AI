@@ -8,8 +8,8 @@ import tempfile
 import pandas as pd
 import numpy as np
 from typing import Callable, Any
-from phantom.classifier.data.data_loader import DataLoader
-from phantom.classifier.data.preprocessor import NearZeroVarianceFilter
+from phantom.classification.data.data_loader import DataLoader
+from phantom.classification.data.preprocessor import NearZeroVarianceFilter
 from .models import (
     get_catboost_model,
     MultiOmicModel,

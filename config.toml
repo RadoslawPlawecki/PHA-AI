@@ -134,3 +134,36 @@ description = "Preprocessed modality data."
 path = "features"
 type = "directory"
 description = "Extracted feature representations used as input for classifier training and prediction."
+
+# ============================================================
+# Modality version 3.0
+# ============================================================
+
+[modalities.v3_0]
+path = "data/modalities/3.0"
+version = "3.0"
+type = "directory"
+
+
+[modalities.v3_0.raw]
+path = "raw"
+type = "directory"
+description = "Raw modality files stored separately for each sample before merging and preprocessing."
+
+
+[modalities.v3_0.raw_merged]
+path = "raw-merged"
+type = "directory"
+description = "Merged raw modality data combined into unified files containing all samples."
+
+
+[modalities.v3_0.preprocessed]
+path = "preprocessed"
+type = "directory"
+description = "Preprocessed modality data."
+
+
+[modalities.v3_0.features]
+path = "features"
+type = "directory"
+description = "Extracted feature representations used as input for classifier training and prediction."

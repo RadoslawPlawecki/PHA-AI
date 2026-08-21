@@ -43,7 +43,7 @@ class CherryFeatureExtractor:
         df = df.copy()
         mask_path = FeatureExtractionPrompts.ask_mask_file(in_root)
         df = apply_mask(df, mask_path)
-        filtered_df = self.preprocess(df, out_path=f"data/modalities/2.0/preprocessed/cherry/{in_root.stem[:3]}_ChV_CHR_M_PP.csv")
+        filtered_df = self.preprocess(df, out_path=f"data/modalities/3.0/preprocessed/cherry/{in_root.stem[:3]}_CHR_M_PP.csv")
         final_df = self._get_feat(filtered_df)
         out_path = out_root / f"{in_root.stem[:3]}_CHR_FEAT.csv"
         final_df.to_csv(out_path, sep=';', index=False)
