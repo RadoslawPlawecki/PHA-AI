@@ -121,8 +121,6 @@ path = "extracted"
 type = "directory"
 description = "Extracted feature representations used as input for classifier training and prediction."
 
-
-
 [features.v3_0]
 path = "data/features/3.0"
 version = "3.0"

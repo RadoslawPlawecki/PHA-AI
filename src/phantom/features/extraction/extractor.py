@@ -51,9 +51,20 @@ class FeatureExtractor:
         print(f"\n[INFO] Extracting features for {tool}/{preprocessed_file.name}...")
         df = pd.read_csv(preprocessed_file, sep=';')
         feature_col = self.prompts.ask_column(df) if pipeline.NEEDS_FEATURE_COLUMN else None
-        feature_matrix = pipeline.build_feature_matrix(df, feature_col)
+        if pipeline.NEEDS_MATRIX_OPTIONS:
+            binary = self.prompts.ask_binary(default=pipeline.binary)
+            min_patients = self.prompts.ask_min_patients(default=pipeline.min_patients)
+        else:
+            binary = None
+            min_patients = None
+        feature_matrix = pipeline.build_feature_matrix(
+            df, feature_col, binary=binary, min_patients=min_patients
+        )
         out_dir = self.extracted_dir / tool
         out_dir.mkdir(parents=True, exist_ok=True)
-        out_path = out_dir / f"{preprocessed_file.stem}_FEAT.csv"
+        stem = preprocessed_file.stem
+        if stem.endswith("_M_PP"):
+            stem = stem[: -len("_M_PP")]
+        out_path = out_dir / f"{stem}_FEAT.csv"
         feature_matrix.to_csv(out_path, sep=';', index=False)
         print(f"       Saved to: {out_path} (Shape: {feature_matrix.shape})")

@@ -7,11 +7,16 @@ construction (used by the extraction step).
 import pandas as pd
 import re
 
+from ..matrix import derive_patient_id
+
 
 class PhavipFeaturePipeline:
     # Derives its own functional categories from Annotation text; needs no
     # interactively chosen column (see build_feature_matrix).
     NEEDS_FEATURE_COLUMN = False
+    # Feature ratios are fixed per category, not a binary/count matrix
+    # over a min-patient cutoff (see build_feature_matrix).
+    NEEDS_MATRIX_OPTIONS = False
 
     CATEGORY_PATTERNS = {
         "structural":
@@ -65,6 +70,11 @@ class PhavipFeaturePipeline:
             r"duf|hypothetical|orf|gp\d+|vog"
     }
 
+    # categorize_annotations() falls back to "other_function" for anything
+    # unmatched by CATEGORY_PATTERNS, so the true output category set has
+    # one more member than CATEGORY_PATTERNS itself.
+    ALL_CATEGORIES = list(CATEGORY_PATTERNS) + ["other_function"]
+
     def __init__(self, min_coverage: float = 0.7, min_pident: float = 0.35):
         self.min_coverage = min_coverage
         self.min_pident = min_pident
@@ -93,12 +103,24 @@ class PhavipFeaturePipeline:
             result.loc[mask] = category
         return result
 
-    def build_feature_matrix(self, df: pd.DataFrame, feature_col: str | None = None) -> pd.DataFrame:
-        # feature_col is unused: categories are fixed (see CATEGORY_PATTERNS),
-        # not interactively chosen. Kept for a uniform pipeline interface.
+    def build_feature_matrix(
+        self, df: pd.DataFrame, feature_col: str | None = None,
+        binary: bool | None = None, min_patients: int | None = None,
+        feature_columns: list[str] | None = None
+    ) -> pd.DataFrame:
+        # feature_col/binary/min_patients are unused: categories are fixed
+        # (see CATEGORY_PATTERNS), not interactively chosen. Kept for a
+        # uniform pipeline interface.
         df = df.copy()
-        df["id"] = df["Accession"].str.split("_").str[0]
+        df["id"] = derive_patient_id(df["Accession"])
         counts = df.groupby(["id", "Category"]).size().unstack(fill_value=0)
+        # Reindex to the full fixed category set: a patient subset (e.g. one
+        # outer-CV fold) can easily have zero rows in some categories, which
+        # would otherwise silently drop that column from just this subset's
+        # matrix.
+        counts = counts.reindex(columns=self.ALL_CATEGORIES, fill_value=0)
         ratios = counts.div(counts.sum(axis=1), axis=0).round(4)
         ratios.columns = [f"{c.lower()}_ratio" for c in ratios.columns]
+        if feature_columns is not None:
+            ratios = ratios.reindex(columns=feature_columns, fill_value=0)
         return ratios.reset_index()

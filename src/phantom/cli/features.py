@@ -139,8 +139,34 @@ class FeatureExtractionPrompts:
         print(f"\n[INFO] Selected column: {col}")
         return col
 
+    def ask_binary(self, default: bool = True) -> bool:
+        binary = questionary.confirm(
+            "Use binary (presence/absence) matrix representation? (No = occurrence counts)",
+            default=default
+        ).ask()
+        print(f"\n[INFO] Matrix representation: {'binary' if binary else 'count'}")
+        return binary
+
+    def ask_min_patients(self, default: int = 1, max_value: int = 10) -> int:
+        answer = questionary.text(
+            f"Minimum number of patients a feature must appear in to be kept (1-{max_value}):",
+            default=str(default),
+            validate=lambda text: text.isdigit() and 1 <= int(text) <= max_value
+            or f"Enter an integer between 1 and {max_value}."
+        ).ask()
+        min_patients = int(answer)
+        print(f"\n[INFO] Minimum patients: {min_patients}")
+        return min_patients
+
 
 class FeatureOptimizationPrompts:
+    MODE_CHOICES = {
+        "exploratory": "Exploratory (default) -- full-dataset search, optimistic score",
+        "nested": "Nested CV -- deleakaged real-world estimate + feature-importance ablation",
+        "permutation": "Permutation test -- significance check against chance",
+        "all": "All three",
+    }
+
     @staticmethod
     def ask_tool_choice(tools: list[str]) -> str | None:
         return questionary.select("Select tool to optimize:", choices=tools).ask()
@@ -158,3 +184,96 @@ class FeatureOptimizationPrompts:
         if not choice:
             return None
         return next(f for f in files if f.name == choice)
+
+    @staticmethod
+    def ask_mode_choice() -> str | None:
+        labels = list(FeatureOptimizationPrompts.MODE_CHOICES.values())
+        keys = list(FeatureOptimizationPrompts.MODE_CHOICES.keys())
+        choice = questionary.select("Select evaluation mode:", choices=labels, default=labels[0]).ask()
+        if choice is None:
+            return None
+        return keys[labels.index(choice)]
+
+    @staticmethod
+    def ask_model_choice(default: str = "catboost") -> str:
+        return questionary.select(
+            "Select model:", choices=["catboost", "rf", "xgb"], default=default
+        ).ask()
+
+    @staticmethod
+    def ask_validator_choice(default: str = "loocv") -> str:
+        return questionary.select(
+            "Select validation strategy:", choices=["loocv", "rcv"], default=default
+        ).ask()
+
+    @staticmethod
+    def ask_metric_choice(default: str = "mcc") -> str:
+        return questionary.select(
+            "Select target metric:", choices=["mcc", "gmean"], default=default
+        ).ask()
+
+    @staticmethod
+    def ask_smote_choice(default: bool = False) -> bool:
+        return questionary.confirm("Apply SMOTE for class balancing?", default=default).ask()
+
+    @staticmethod
+    def _ask_positive_int(message: str, default: int) -> int:
+        answer = questionary.text(
+            message, default=str(default),
+            validate=lambda text: text.isdigit() and int(text) >= 1 or "Enter a positive integer."
+        ).ask()
+        return int(answer)
+
+    @staticmethod
+    def ask_outer_folds(default: int = 5) -> int:
+        return FeatureOptimizationPrompts._ask_positive_int(
+            "Nested CV: number of outer folds:", default
+        )
+
+    @staticmethod
+    def ask_outer_repeats(default: int = 3) -> int:
+        return FeatureOptimizationPrompts._ask_positive_int(
+            "Nested CV: number of repeats of the outer fold split:", default
+        )
+
+    @staticmethod
+    def ask_inner_trials() -> int | None:
+        answer = questionary.text(
+            "Nested CV: Optuna trial budget per outer fold's inner search "
+            "(leave blank for the tool's normal full budget):",
+            default="",
+            validate=lambda text: text == "" or (text.isdigit() and int(text) >= 1)
+            or "Enter a positive integer, or leave blank."
+        ).ask()
+        return int(answer) if answer else None
+
+    @staticmethod
+    def ask_n_permutations(default: int = 50) -> int:
+        return FeatureOptimizationPrompts._ask_positive_int(
+            "Permutation test: number of label-shuffled reps:", default
+        )
+
+    @staticmethod
+    def ask_permutation_trials() -> int | None:
+        answer = questionary.text(
+            "Permutation test: Optuna trial budget per rep "
+            "(leave blank to match the tool's full search budget):",
+            default="",
+            validate=lambda text: text == "" or (text.isdigit() and int(text) >= 1)
+            or "Enter a positive integer, or leave blank."
+        ).ask()
+        return int(answer) if answer else None
+
+    @staticmethod
+    def ask_top_k_features(default: int = 10) -> int:
+        return FeatureOptimizationPrompts._ask_positive_int(
+            "Nested CV: size of the feature-importance mini-model ablation (top-K):", default
+        )
+
+    @staticmethod
+    def ask_optimization_out_dir(tool: str) -> Path:
+        default_dir = ConfigLoader.resolve_data_path(f"results/optimization/{tool}")
+        answer = questionary.path(
+            "Output directory for results:", default=str(default_dir), only_directories=True
+        ).ask()
+        return Path(answer)
