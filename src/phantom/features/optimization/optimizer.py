@@ -49,6 +49,22 @@ class FeatureOptimizer:
         out_dir = FeatureOptimizationPrompts.ask_optimization_out_dir(tool)
         os.makedirs(out_dir, exist_ok=True)
 
+        from phantom.classification.analytics.saver import ExperimentSaver
+        ExperimentSaver(exp_dir=str(out_dir)).save_metadata({
+            "tool": tool,
+            "mode": mode,
+            "model": config.model,
+            "validator": config.validator,
+            "metric": config.metric,
+            "smote": config.smote,
+            "outer_folds": outer_folds,
+            "outer_repeats": outer_repeats,
+            "inner_trials": inner_trials,
+            "top_k_features": top_k_features,
+            "n_permutations": n_permutations,
+            "permutation_trials": permutation_trials,
+        })
+
         source_path, loaded_df = _load_preprocessed(tool, self.config_mgr)
 
         observed = None

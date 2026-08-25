@@ -8,6 +8,8 @@ import csv
 from collections import Counter
 from pathlib import Path
 
+from phantom.classification.data.labeling import Labeling
+
 
 class DataLoader:
     def __init__(self, input_path: str, logger=None):
@@ -20,18 +22,13 @@ class DataLoader:
         try:
             with open(self.input_path, newline="") as f:
                 sample = f.read(4096)
-                dialect = csv.Sniffer().sniff(sample)
+                dialect = csv.Sniffer().sniff(sample, delimiters=";,\t")
                 sep = dialect.delimiter
         except:
             sep = ";"
         df = pd.read_csv(self.input_path, sep=sep)
         sample_ids = df['id'].copy()
-        y = (
-            pd.to_numeric(
-                sample_ids.str.extract(r'\|S(\d+)')[0],
-                errors='coerce'
-            ) <= 34
-        ).to_numpy(dtype=int)
+        y = Labeling.derive_label(sample_ids)
         X = df.drop(columns=['id', 'label'], errors="ignore")
         X = X.apply(pd.to_numeric, errors="coerce")
         self._log_load(X=X, y=y)

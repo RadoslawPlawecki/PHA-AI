@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from phantom.classification.data.labeling import Labeling
 from phantom.classification.ml.significance import Significance
@@ -62,8 +63,8 @@ def run_permutation_test(
     rng = np.random.default_rng(random_state)
     null_scores = []
     per_permutation_best_params = []
-    for rep in range(n_permutations):
-        print(f"\n[INFO] {tool.upper()} permutation test -- rep {rep + 1}/{n_permutations}")
+    for rep in tqdm(range(n_permutations), desc=f"{tool.upper()} permutation test"):
+        tqdm.write(f"[INFO] {tool.upper()} permutation test -- rep {rep + 1}/{n_permutations}")
         shuffled_labels = rng.permutation(true_labels)
         y_override = pd.Series(shuffled_labels, index=unique_patients)
         study = search_fn(

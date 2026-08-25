@@ -4,3 +4,4 @@ __pycache__/
 *.pyd
 src/phantom.egg-info
 CLAUDE.md
+catboost_info

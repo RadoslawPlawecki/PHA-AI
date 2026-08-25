@@ -84,13 +84,20 @@ class FeatureExtractionOptimizer:
         self.min_features = min_features
         self.logger = logger
 
-    def run(self, feature_matrix: pd.DataFrame) -> float:   
+    def run(self, feature_matrix: pd.DataFrame, y_override: pd.Series | None = None) -> float:
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode='w') as tmp:
             feature_matrix.to_csv(tmp.name, sep=';', index=False)
             tmp_path = tmp.name
         try:
             loader = DataLoader(input_path=tmp_path, logger=self.logger)
             X, labels, sample_ids = loader.load()
+            if y_override is not None:
+                mapped = sample_ids.map(y_override)
+                if mapped.isna().any():
+                    raise ValueError(
+                        "y_override does not cover every patient id in the feature matrix."
+                    )
+                labels = mapped.to_numpy(dtype=int)
             if X.empty or X.shape[1] < self.min_features or len(np.unique(labels)) <= 1:
                 return 0.0
             nzv = NearZeroVarianceFilter(logger=self.logger, threshold=self.nzv_threshold)

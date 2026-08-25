@@ -53,9 +53,9 @@ PHAGCN_SEARCH_SPACE = {
     "min_patients": list(range(1, 11))
 }
 
-CHERRY_DEFAULT_TRIALS = 150
-PHAGCN_DEFAULT_TRIALS = 80
-PHAVIP_DEFAULT_TRIALS = 150
+CHERRY_DEFAULT_TRIALS = 120
+PHAGCN_DEFAULT_TRIALS = 20
+PHAVIP_DEFAULT_TRIALS = 100
 
 DEFAULT_TRIALS = {
     "cherry": CHERRY_DEFAULT_TRIALS,
@@ -130,13 +130,12 @@ def run_study(study_name: str, objective_callable, n_trials: int,
 
     def wrapped_objective(trial):
         return objective_callable(trial, optimizer=optimizer)
-
-    optuna.logging.set_verbosity(optuna.logging.INFO if verbose else optuna.logging.WARNING)
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(study_name=study_name, direction="maximize", sampler=sampler)
     if verbose:
         print(f"\n[INFO] Starting Optuna optimization for {study_name.upper()}...")
         print(f"[INFO] Pipeline: Model={model_name.upper()}, Validator={validator_name.upper()}, Target Metric={target_metric.upper()}, SMOTE={use_smote}")
-    study.optimize(wrapped_objective, n_trials=n_trials)
+    study.optimize(wrapped_objective, n_trials=n_trials, show_progress_bar=verbose)
     if verbose:
         print_optimization_results(
             study=study,

@@ -3,7 +3,7 @@ import questionary
 
 from phantom.preprocessing.controller import PreprocessingController
 from phantom.features.controller import FeatureController
-# from phantom.cli.classifier import run_classifier
+from phantom.classification.controller import ClassificationController
 
 def main():
     print("=== PHANTOM v.0.0.1 ===")
@@ -35,8 +35,7 @@ def main():
             print("\n" + "="*40)
             print("STEP 3: CLASSIFIER")
             print("="*40)
-            print("Module pending implementation...")
-            # run_classifier()
+            ClassificationController().run()
         print("\n") 
 
 if __name__ == "__main__":

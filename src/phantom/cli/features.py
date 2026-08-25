@@ -201,6 +201,10 @@ class FeatureOptimizationPrompts:
         ).ask()
 
     @staticmethod
+    def ask_smote_choice(default: bool = False) -> bool:
+        return questionary.confirm("Apply SMOTE for class balancing?", default=default).ask()
+
+    @staticmethod
     def ask_validator_choice(default: str = "loocv") -> str:
         return questionary.select(
             "Select validation strategy:", choices=["loocv", "rcv"], default=default
@@ -211,10 +215,6 @@ class FeatureOptimizationPrompts:
         return questionary.select(
             "Select target metric:", choices=["mcc", "gmean"], default=default
         ).ask()
-
-    @staticmethod
-    def ask_smote_choice(default: bool = False) -> bool:
-        return questionary.confirm("Apply SMOTE for class balancing?", default=default).ask()
 
     @staticmethod
     def _ask_positive_int(message: str, default: int) -> int:

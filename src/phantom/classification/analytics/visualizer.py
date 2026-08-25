@@ -3,10 +3,31 @@
 """
 
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
 from phantom.visualization.plots_formatting import use_latex
 
 
 class Visualizer:
+    @staticmethod
+    def plot_roc_curve(y_true, y_prob, title="ROC Curve", save_path=None):
+        use_latex()
+        fpr, tpr, _ = roc_curve(y_true, y_prob)
+        roc_auc = auc(fpr, tpr)
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.plot(fpr, tpr, color='#1f77b4', lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
+        ax.plot([0, 1], [0, 1], color='gray', lw=1, linestyle='--')
+        ax.set_xlim([0.0, 1.0])
+        ax.set_ylim([0.0, 1.05])
+        ax.set_xlabel('False Positive Rate', fontsize=12)
+        ax.set_ylabel('True Positive Rate', fontsize=12)
+        ax.set_title(title, fontsize=14, weight='bold', pad=10)
+        ax.legend(loc='lower right')
+        ax.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path, format="pdf", bbox_inches="tight")
+        plt.close()
+
     @staticmethod
     def plot_unsupervised_grid(coords_dict, y_aligned, sample_ids, title_main="Multi-Dimensional Scaling", save_path=None):
         use_latex()

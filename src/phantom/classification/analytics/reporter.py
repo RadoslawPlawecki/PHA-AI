@@ -29,6 +29,33 @@ class ReportFormatter:
         )
 
     @staticmethod
+    def format_nested_comparison(full_metrics: dict, ablation_metrics: dict, target_metric: str) -> str:
+        full_score = ReportFormatter.format_metric(full_metrics[target_metric])
+        ablation_score = ReportFormatter.format_metric(ablation_metrics[target_metric])
+        return (
+            "\nNested CV -- Real-World Estimate vs. Feature-Importance Mini-Model:\n"
+            f"Full feature matrix ({target_metric.upper()}): {full_score}\n"
+            f"Top-K mini-model      ({target_metric.upper()}): {ablation_score}\n"
+            "A mini-model score close to the full model's suggests the signal is "
+            "carried by a small, coherent feature set rather than noise scattered "
+            "across a wide sparse matrix.\n"
+        )
+
+    @staticmethod
+    def format_permutation_test(result, target_metric: str) -> str:
+        null_scores = result.null_scores
+        return (
+            "\nPermutation Test (does the relationship beat chance?):\n"
+            f"Observed best score ({target_metric.upper()}): {result.observed_score:.4f}\n"
+            f"Null distribution ({result.n_permutations} reps, "
+            f"{result.permutation_trials} trials/rep): "
+            f"mean={null_scores.mean():.4f}, std={null_scores.std():.4f}, "
+            f"max={null_scores.max():.4f}\n"
+            f"Majority-class baseline ({target_metric.upper()}): {result.baseline_score:.4f}\n"
+            f"p-value: {result.p_value:.4f}\n"
+        )
+
+    @staticmethod
     def format_confusion_matrix(cm: dict) -> str:
         return (
             "\nConfusion Matrix:\n"

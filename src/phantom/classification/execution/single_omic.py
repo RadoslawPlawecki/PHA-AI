@@ -2,24 +2,25 @@
 @author: Radosław Pławecki
 """
 
-from phantom.classifier.data.config import SingleOmicConfig
-from phantom.classifier.data.data_loader import DataLoader
-from phantom.classifier.data.preprocessor import NearZeroVarianceFilter
-from phantom.classifier.analytics.logger import Logger
-from phantom.classifier.analytics.reporter import ReportFormatter
-from phantom.classifier.analytics.saver import ExperimentSaver
-from phantom.classifier.ml.models import (
+from phantom.classification.data.config import SingleOmicConfig
+from phantom.classification.data.data_loader import DataLoader
+from phantom.classification.data.preprocessor import NearZeroVarianceFilter
+from phantom.classification.analytics.logger import Logger
+from phantom.classification.analytics.reporter import ReportFormatter
+from phantom.classification.analytics.saver import ExperimentSaver
+from phantom.classification.analytics.visualizer import Visualizer
+from phantom.classification.ml.models import (
     SingleOmicModel,
     get_rf_model,
     get_catboost_model,
     get_xgb_model,
 )
-from phantom.classifier.ml.validators import (
+from phantom.classification.ml.validators import (
     LOOCVValidator,
     RepeatedCVValidator,
     CVResults,
 )
-from phantom.classifier.ml.evaluator import EvaluatorSl
+from phantom.classification.ml.evaluator import EvaluatorSl
 import os
 import pandas as pd
 import argparse
@@ -145,6 +146,11 @@ class SingleOmicClassifier:
             subfolder=name
         )
         self.saver.save_metrics(metrics, subfolder=name)
+        Visualizer.plot_roc_curve(
+            results.y_true, results.y_prob,
+            title=f"ROC Curve -- {self.config.model_type.upper()} ({name.upper()})",
+            save_path=os.path.join(self.saver.exp_dir, name, "roc_curve.pdf"),
+        )
 
     def _finish(self):
         self.logger.info("=== END EXPERIMENT ===")

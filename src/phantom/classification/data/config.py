@@ -15,7 +15,7 @@ class MdsConfig:
     out_dir: str
 
     @classmethod
-    def from_args(cls) -> "MdSConfig":
+    def from_args(cls) -> "MdsConfig":
         parser = argparse.ArgumentParser(description="Multi-Dimensional Scaling")
         parser.add_argument("--comp", type=str, required=True, help="Direct path to the virus composition modality")
         parser.add_argument("--func", type=str, required=True, help="Direct path to the functional modality")
@@ -56,7 +56,7 @@ class SingleOmicConfig:
         return cls(
             in_file=args.in_file,
             modality=args.modality,
-            vtool=args.gtool,
+            vtool=args.vtool,
             out_dir=args.out_dir,
             run_loocv=args.run_loocv,
             run_repeated=args.run_repeated,
@@ -98,7 +98,7 @@ class MultiOmicConfig:
             comp=args.comp,
             host=args.host,
             func=args.func,
-            out_file=args.out_file,
+            out_dir=args.out_dir,
             run_loocv=args.run_loocv,
             run_repeated=args.run_repeated,
             use_smote=args.use_smote,

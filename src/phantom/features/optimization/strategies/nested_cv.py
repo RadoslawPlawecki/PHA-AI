@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import RepeatedStratifiedKFold
+from tqdm import tqdm
 
 from phantom.classification.data.labeling import Labeling
 from phantom.classification.data.preprocessor import NearZeroVarianceFilter
@@ -86,14 +87,16 @@ def run_nested_cv(
     full_rows, ablation_rows = [], []
     per_fold_best_params, per_fold_top_features, skipped_folds = [], [], []
 
-    for fold_id, (train_pos, test_pos) in enumerate(outer_cv.split(unique_patients, unique_labels)):
+    total_folds = outer_folds * outer_repeats
+    splits = enumerate(outer_cv.split(unique_patients, unique_labels))
+    for fold_id, (train_pos, test_pos) in tqdm(splits, total=total_folds, desc=f"{tool.upper()} nested CV"):
         current_repeat = fold_id // outer_folds
         current_fold = fold_id % outer_folds
         train_patients = set(unique_patients[train_pos])
         test_patients = set(unique_patients[test_pos])
 
-        print(
-            f"\n[INFO] {tool.upper()} nested CV -- repeat {current_repeat}, fold {current_fold} "
+        tqdm.write(
+            f"[INFO] {tool.upper()} nested CV -- repeat {current_repeat}, fold {current_fold} "
             f"({len(train_patients)} train / {len(test_patients)} test patients)"
         )
 

@@ -8,6 +8,15 @@ VIB = "vibrant"
 VS2 = "virsorter2"
 
 # ============================================================
+# Omic modalities
+# ============================================================
+
+[omics]
+comp = { tool = "phagcn", tag = "PGN", label = "Composition" }
+host = { tool = "cherry", tag = "CHR", label = "Host prediction" }
+func = { tool = "phavip", tag = "PHV", label = "Functional" }
+
+# ============================================================
 # Paths
 # ============================================================
 
