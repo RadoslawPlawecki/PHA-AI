@@ -74,7 +74,7 @@ class RepeatedCVValidator(BaseValidator):
             model_wrapper.fit(X_train, y_train)
             y_pred = model_wrapper.predict(X_test)
             y_prob = model_wrapper.predict_proba(X_test)[:, 1]
-            r = permutation_importance(model_wrapper.model_, X_test, y_test, n_repeats=5)
+            r = permutation_importance(model_wrapper.model_, X_test, y_test, n_repeats=5, random_state=self.cv.random_state)
             n_samples = len(test_idx)
             current_repeat = fold_id // self.n_splits
             current_fold = fold_id % self.n_splits

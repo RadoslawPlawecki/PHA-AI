@@ -13,6 +13,7 @@ class PreprocessingPrompts:
             choices=[
                 "1) Collect putative viral genomes",
                 "2) Gather metadata",
+                "3) Generate CheckV masks",
                 "Back"
             ]
         ).ask()

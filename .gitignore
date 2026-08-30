@@ -5,3 +5,5 @@ __pycache__/
 src/phantom.egg-info
 CLAUDE.md
 catboost_info
+.claude
+ROADMAP.md

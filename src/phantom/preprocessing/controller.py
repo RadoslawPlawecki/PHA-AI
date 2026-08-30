@@ -14,6 +14,7 @@ from phantom.preprocessing.metadata.scanner import scan_metadata
 from phantom.preprocessing.metadata.labeling import (
     ManualLabeler, PatternLabeler, SampleThresholdLabeler, ExternalCSVLabeler
 )
+from phantom.preprocessing.masks.generator import CheckvMaskGenerator
 
 class PreprocessingController:
     def __init__(self):
@@ -37,6 +38,8 @@ class PreprocessingController:
                     self._gather_metadata(df_collected)
             elif action.startswith("2)"):
                 self._gather_metadata()
+            elif action.startswith("3)"):
+                self._generate_checkv_masks()
 
     def _collect_genomes(self) -> pd.DataFrame:
         collector = GenomeCollector(self.config, self.meta_mapper)
@@ -130,6 +133,14 @@ class PreprocessingController:
                     print(f"[ERROR] {e}")
         if dfs_to_merge:
             print("\n[SUCCESS] Metadata gathering and update complete!")
+
+    def _generate_checkv_masks(self):
+        print("\n[INFO] Generating CheckV masks...")
+        processed = CheckvMaskGenerator(self.config).run()
+        if processed:
+            print(f"\n[SUCCESS] Generated masks for {processed} tool(s).")
+        else:
+            print("\n[ERROR] No CheckV results found to generate masks from.")
 
 
 if __name__ == "__main__":
