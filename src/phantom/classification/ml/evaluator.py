@@ -2,6 +2,8 @@
 @author: Radosław Pławecki
 """
 
+from typing import ClassVar
+
 from sklearn.metrics import (
     roc_auc_score,
     balanced_accuracy_score,
@@ -19,7 +21,7 @@ from skbio.stats.distance import DistanceMatrix, anosim, permanova
 
 
 class EvaluatorSl:
-    METRICS = {
+    METRICS: ClassVar[dict] = {
         "roc_auc": lambda yt, yp, ypb: roc_auc_score(yt, ypb),
         "bacc": lambda yt, yp, ypb: balanced_accuracy_score(yt, yp),
         "f1": lambda yt, yp, ypb: f1_score(yt, yp),
@@ -71,7 +73,7 @@ class EvaluatorSl:
 
 
 class EvaluatorUl:
-    METRICS = {
+    METRICS: ClassVar[dict] = {
         "silhouette": lambda dist_matrix, labels:
             silhouette_score(dist_matrix, labels, metric="precomputed"),
         "permanova": lambda dist_matrix, labels:

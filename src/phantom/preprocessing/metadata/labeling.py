@@ -58,6 +58,6 @@ class ExternalCSVLabeler(LabelingStrategy):
     def assign_labels(self, df: pd.DataFrame) -> Dict[str, int]:
         external_df = pd.read_csv(self.csv_path)
         merged = df.merge(external_df, on=self.join_key, how="left")
-        return dict(zip(merged["id"], 
-                        merged[self.label_col].fillna(0).astype(int)))
+        return dict(zip(merged["id"],
+                        merged[self.label_col].fillna(0).astype(int), strict=True))
     

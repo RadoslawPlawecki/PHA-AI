@@ -10,7 +10,7 @@ import numpy as np
 class ReportFormatter:
     @staticmethod
     def format_metric(metric: dict) -> str:
-        return f"{metric["score"]:.3f}"
+        return f"{metric['score']:.3f}"
 
     @staticmethod
     def format_metrics(metrics: dict) -> str:

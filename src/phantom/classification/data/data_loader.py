@@ -24,7 +24,7 @@ class DataLoader:
                 sample = f.read(4096)
                 dialect = csv.Sniffer().sniff(sample, delimiters=";,\t")
                 sep = dialect.delimiter
-        except:
+        except (csv.Error, OSError):
             sep = ";"
         df = pd.read_csv(self.input_path, sep=sep)
         sample_ids = df['id'].copy()
@@ -45,7 +45,8 @@ class DataLoader:
         for cls, count in sorted(counts.items()):
             pct = 100 * count / total
             class_lines.append(f"       class {cls}: {count} ({pct:.1f}%)")
-        msg4 = f"\n{class_distribution}\n{"\n".join(class_lines)}\n"
+        joined_class_lines = "\n".join(class_lines)
+        msg4 = f"\n{class_distribution}\n{joined_class_lines}\n"
         msg5 = f"Missing Values: {int(X.isna().sum().sum())}"
         if self.logger:
             self.logger.info(msg1)

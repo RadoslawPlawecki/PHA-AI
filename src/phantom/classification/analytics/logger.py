@@ -5,13 +5,11 @@
 import logging
 import os
 from tqdm import tqdm
-from datetime import datetime
 
 
 class Logger:
     def setup_logger(name="tool", log_dir="logs", log_filename="execution.log"):
         os.makedirs(log_dir, exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_path = os.path.join(log_dir, log_filename)
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)

@@ -6,6 +6,7 @@ construction (used by the extraction step).
 
 import pandas as pd
 import re
+from typing import ClassVar
 
 from ..matrix import derive_patient_id
 
@@ -18,7 +19,7 @@ class PhavipFeaturePipeline:
     # over a min-patient cutoff (see build_feature_matrix).
     NEEDS_MATRIX_OPTIONS = False
 
-    CATEGORY_PATTERNS = {
+    CATEGORY_PATTERNS: ClassVar[dict] = {
         "structural":
         r"capsid|head|tail|portal|fiber|baseplate|"
         r"sheath|spike|scaffolding|neck|virion|coat|"

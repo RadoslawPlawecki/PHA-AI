@@ -3,6 +3,7 @@ Contains CLI prompts used during the feature processing workflow.
 """
 
 from pathlib import Path
+from typing import ClassVar
 import questionary
 import pandas as pd
 from phantom.config.loader import ConfigLoader
@@ -161,7 +162,7 @@ class FeatureExtractionPrompts:
 
 
 class FeatureOptimizationPrompts:
-    MODE_CHOICES = {
+    MODE_CHOICES: ClassVar[dict] = {
         "exploratory": "Exploratory (default) -- full-dataset search, optimistic score",
         "nested": "Nested CV -- deleakaged real-world estimate + feature-importance ablation",
         "permutation": "Permutation test -- significance check against chance",
