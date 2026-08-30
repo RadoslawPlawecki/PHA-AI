@@ -2,30 +2,25 @@
 @author: Radosław Pławecki
 """
 
-from phantom.classification.data.config import SingleOmicConfig
-from phantom.classification.data.data_loader import DataLoader
-from phantom.classification.data.preprocessor import NearZeroVarianceFilter
+import os
+from datetime import datetime
+
 from phantom.classification.analytics.logger import Logger
 from phantom.classification.analytics.reporter import ReportFormatter
 from phantom.classification.analytics.saver import ExperimentSaver
 from phantom.classification.analytics.visualizer import Visualizer
+from phantom.classification.data.data_loader import DataLoader
+from phantom.classification.data.preprocessor import NearZeroVarianceFilter
+from phantom.classification.ml.evaluator import EvaluatorSl
 from phantom.classification.ml.models import (
-    SingleOmicModel,
-    get_rf_model,
     get_catboost_model,
+    get_rf_model,
     get_xgb_model,
 )
 from phantom.classification.ml.validators import (
     LOOCVValidator,
     RepeatedCVValidator,
-    CVResults,
 )
-from phantom.classification.ml.evaluator import EvaluatorSl
-import os
-import pandas as pd
-import argparse
-from tqdm import tqdm
-from datetime import datetime
 
 
 class SingleOmicClassifier:
@@ -46,7 +41,7 @@ class SingleOmicClassifier:
         self._validate()
 
     def _setup(self):
-        exp_dir, self.logger, self.saver = self._create_experiment()
+        _exp_dir, self.logger, self.saver = self._create_experiment()
         self.logger.info("=== SINGLE-OMIC ALLERGY CLASSIFIER ===")
         self.saver.save_metadata(vars(self.config))
 
@@ -58,10 +53,7 @@ class SingleOmicClassifier:
             exp_name = f"run_{self.config.model_type}_{timestamp}"
         exp_dir = os.path.join(self.config.out_dir, exp_name)
         os.makedirs(exp_dir, exist_ok=True)
-        logger = Logger.setup_logger(
-            log_dir=exp_dir,
-            log_filename=f"{timestamp}.log"
-        )
+        logger = Logger.setup_logger(log_dir=exp_dir, log_filename=f"{timestamp}.log")
         saver = ExperimentSaver(exp_dir=exp_dir)
         return exp_dir, logger, saver
 
@@ -78,9 +70,7 @@ class SingleOmicClassifier:
             "xgb": get_xgb_model,
             "catboost": get_catboost_model,
         }
-        self.model = factories[self.config.model_type](
-            use_smote=self.config.use_smote
-        )
+        self.model = factories[self.config.model_type](use_smote=self.config.use_smote)
 
     def _validate(self):
         if self.config.run_loocv:
@@ -92,49 +82,33 @@ class SingleOmicClassifier:
         self.logger.info(f"--- SINGLE-OMIC EVALUATION: {name.upper()} ---")
         results = validator.run(self.model, self.values, self.labels)
         metrics = EvaluatorSl.evaluate(
-            results.y_true,
-            results.y_pred,
-            results.y_prob,
-            results.test_idx
+            results.y_true, results.y_pred, results.y_prob, results.test_idx
         )
         self._log_results(results, metrics)
         self._save_results(name, results, metrics)
 
     def _log_results(self, results, metrics):
         self.logger.info(ReportFormatter.format_metrics(metrics))
-        self.logger.info(
-            ReportFormatter.format_confusion_matrix(
-                metrics["confusion_matrix"]
-            )
-        )
+        self.logger.info(ReportFormatter.format_confusion_matrix(metrics["confusion_matrix"]))
         self.logger.info(
             ReportFormatter.format_misclassified_samples(
-                results.y_true,
-                results.y_pred,
-                results.test_idx,
-                self.sample_ids
+                results.y_true, results.y_pred, results.test_idx, self.sample_ids
             )
         )
         self.logger.info(
             ReportFormatter.format_top_features(
-                results.importance_mean,
-                self.feature_names,
-                self.values,
-                self.labels
+                results.importance_mean, self.feature_names, self.values, self.labels
             )
         )
 
     def _save_results(self, name, results, metrics):
         mapped_ids = (
             self.sample_ids.iloc[results.test_idx].tolist()
-            if results.test_idx is not None else None
+            if results.test_idx is not None
+            else None
         )
         self.saver.save_feature_importance(
-            results.importance_mean,
-            self.feature_names,
-            self.values,
-            self.labels,
-            subfolder=name
+            results.importance_mean, self.feature_names, self.values, self.labels, subfolder=name
         )
         self.saver.save_predictions(
             y_true=results.y_true,
@@ -143,11 +117,12 @@ class SingleOmicClassifier:
             sample_ids=mapped_ids,
             folds=getattr(results, "folds", None),
             repeats=getattr(results, "repeats", None),
-            subfolder=name
+            subfolder=name,
         )
         self.saver.save_metrics(metrics, subfolder=name)
         Visualizer.plot_roc_curve(
-            results.y_true, results.y_prob,
+            results.y_true,
+            results.y_prob,
             title=f"ROC Curve -- {self.config.model_type.upper()} ({name.upper()})",
             save_path=os.path.join(self.saver.exp_dir, name, "roc_curve.pdf"),
         )

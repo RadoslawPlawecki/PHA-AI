@@ -22,6 +22,7 @@ from tqdm import tqdm
 from phantom.classification.data.labeling import Labeling
 from phantom.classification.data.preprocessor import NearZeroVarianceFilter
 from phantom.features.pipelines.matrix import derive_patient_id, filter_accessions
+
 from ..search_core import APPLY_FNS, MODEL_FACTORIES, SEARCH_FNS
 
 
@@ -47,8 +48,9 @@ class NestedCVResult:
 def _pool(rows: list[dict]) -> PooledResults:
     if not rows:
         empty = np.array([])
-        return PooledResults(y_true=empty, y_pred=empty, y_prob=empty,
-                              patient_ids=empty, fold=empty, repeat=empty)
+        return PooledResults(
+            y_true=empty, y_pred=empty, y_prob=empty, patient_ids=empty, fold=empty, repeat=empty
+        )
     return PooledResults(
         y_true=np.concatenate([r["y_true"] for r in rows]),
         y_pred=np.concatenate([r["y_pred"] for r in rows]),
@@ -89,7 +91,9 @@ def run_nested_cv(
 
     total_folds = outer_folds * outer_repeats
     splits = enumerate(outer_cv.split(unique_patients, unique_labels))
-    for fold_id, (train_pos, test_pos) in tqdm(splits, total=total_folds, desc=f"{tool.upper()} nested CV"):
+    for fold_id, (train_pos, test_pos) in tqdm(
+        splits, total=total_folds, desc=f"{tool.upper()} nested CV"
+    ):
         current_repeat = fold_id // outer_folds
         current_fold = fold_id % outer_folds
         train_patients = set(unique_patients[train_pos])
@@ -143,14 +147,16 @@ def run_nested_cv(
 
         model = MODEL_FACTORIES[model_name](use_smote=use_smote)
         model.fit(X_train_vals, y_train)
-        full_rows.append({
-            "y_true": y_test,
-            "y_pred": model.predict(X_test_vals),
-            "y_prob": model.predict_proba(X_test_vals)[:, 1],
-            "patient_ids": test_patient_ids,
-            "fold": np.full(n_test, current_fold),
-            "repeat": np.full(n_test, current_repeat),
-        })
+        full_rows.append(
+            {
+                "y_true": y_test,
+                "y_pred": model.predict(X_test_vals),
+                "y_prob": model.predict_proba(X_test_vals)[:, 1],
+                "patient_ids": test_patient_ids,
+                "fold": np.full(n_test, current_fold),
+                "repeat": np.full(n_test, current_repeat),
+            }
+        )
 
         k = min(top_k, len(feature_names))
         top_idx = np.argsort(model.feature_importances_)[-k:][::-1]
@@ -159,14 +165,16 @@ def run_nested_cv(
 
         mini_model = MODEL_FACTORIES[model_name](use_smote=use_smote)
         mini_model.fit(X_train_vals[:, top_idx], y_train)
-        ablation_rows.append({
-            "y_true": y_test,
-            "y_pred": mini_model.predict(X_test_vals[:, top_idx]),
-            "y_prob": mini_model.predict_proba(X_test_vals[:, top_idx])[:, 1],
-            "patient_ids": test_patient_ids,
-            "fold": np.full(n_test, current_fold),
-            "repeat": np.full(n_test, current_repeat),
-        })
+        ablation_rows.append(
+            {
+                "y_true": y_test,
+                "y_pred": mini_model.predict(X_test_vals[:, top_idx]),
+                "y_prob": mini_model.predict_proba(X_test_vals[:, top_idx])[:, 1],
+                "patient_ids": test_patient_ids,
+                "fold": np.full(n_test, current_fold),
+                "repeat": np.full(n_test, current_repeat),
+            }
+        )
 
     return NestedCVResult(
         full=_pool(full_rows),

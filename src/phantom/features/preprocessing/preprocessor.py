@@ -8,11 +8,11 @@ from pathlib import Path
 
 from phantom.cli.features import FeatureExtractionPrompts
 from phantom.config.features import FeatureConfigManager
-from phantom.features.pipelines.utils import load_file, apply_mask
 from phantom.features.pipelines.tools.cherry import CherryFeaturePipeline
 from phantom.features.pipelines.tools.phagcn import PhagcnFeaturePipeline
-from phantom.features.pipelines.tools.phavip import PhavipFeaturePipeline
 from phantom.features.pipelines.tools.phatyp import PhatypFeaturePipeline
+from phantom.features.pipelines.tools.phavip import PhavipFeaturePipeline
+from phantom.features.pipelines.utils import apply_mask, load_file
 
 PIPELINES = {
     "cherry": CherryFeaturePipeline,
@@ -58,5 +58,5 @@ class FeaturePreprocessor:
         out_dir = self.preprocessed_dir / tool
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"{merged_file.stem}_PP.csv"
-        preprocessed_df.to_csv(out_path, sep=';', index=False)
+        preprocessed_df.to_csv(out_path, sep=";", index=False)
         print(f"       Saved to: {out_path} (Shape: {preprocessed_df.shape})")

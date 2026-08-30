@@ -3,19 +3,18 @@
 """
 
 import os
-import pandas as pd
-import argparse
 from datetime import datetime
+
 from scipy.spatial.distance import pdist, squareform
 from sklearn.manifold import MDS
-from phantom.classification.data.config import MdsConfig
+
+from phantom.classification.analytics.logger import Logger
+from phantom.classification.analytics.reporter import ReportFormatter
+from phantom.classification.analytics.saver import ExperimentSaver
+from phantom.classification.analytics.visualizer import Visualizer
 from phantom.classification.data.data_aligner import DataAligner
 from phantom.classification.data.data_loader import DataLoader
 from phantom.classification.data.preprocessor import NearZeroVarianceFilter
-from phantom.classification.analytics.logger import Logger
-from phantom.classification.analytics.reporter import ReportFormatter
-from phantom.classification.analytics.visualizer import Visualizer
-from phantom.classification.analytics.saver import ExperimentSaver
 from phantom.classification.ml.evaluator import EvaluatorUl
 
 
@@ -44,13 +43,10 @@ class UnsupervisedClassifier:
     def _setup(self):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         exp_name = f"run_unsupervised_{timestamp}"
-        base_out_dir = getattr(self.config, 'out_dir', 'results')
+        base_out_dir = getattr(self.config, "out_dir", "results")
         exp_dir = os.path.join(base_out_dir, exp_name)
         os.makedirs(exp_dir, exist_ok=True)
-        self.logger = Logger.setup_logger(
-            log_dir=exp_dir, 
-            log_filename=f"{timestamp}.log"
-        )
+        self.logger = Logger.setup_logger(log_dir=exp_dir, log_filename=f"{timestamp}.log")
         self.saver = ExperimentSaver(exp_dir=exp_dir)
         self.logger.info("=== UNSUPERVISED LEARNING ===")
         self.saver.save_metadata(vars(self.config))
@@ -70,16 +66,16 @@ class UnsupervisedClassifier:
                 "values": values,
                 "feature_names": feature_names,
                 "ids": list(sample_ids),
-                "labels": list(labels)
+                "labels": list(labels),
             }
         self.X_data, self.labels, self.common_samples = DataAligner.align(self.X_raw)
         self.aligned_X = {m: self.X_data[m]["values"] for m in self.X_data}
         self.logger.info("Dataset Aligned")
 
     def _compute_distances(self):
-        dist_comp = squareform(pdist(self.aligned_X["comp"], metric='jaccard'))
-        dist_host = squareform(pdist(self.aligned_X["host"], metric='euclidean'))
-        dist_func = squareform(pdist(self.aligned_X["func"], metric='braycurtis'))
+        dist_comp = squareform(pdist(self.aligned_X["comp"], metric="jaccard"))
+        dist_host = squareform(pdist(self.aligned_X["host"], metric="euclidean"))
+        dist_func = squareform(pdist(self.aligned_X["func"], metric="braycurtis"))
         self.logger.info(
             f"\nDistance Matrices Computed with Dimensions:\n"
             f"Comp = {self.aligned_X['comp'].shape[1]} Features\n"
@@ -89,12 +85,12 @@ class UnsupervisedClassifier:
         dist_comp_norm = dist_comp / dist_comp.max() if dist_comp.max() > 0 else dist_comp
         dist_host_norm = dist_host / dist_host.max() if dist_host.max() > 0 else dist_host
         dist_func_norm = dist_func / dist_func.max() if dist_func.max() > 0 else dist_func
-        fused_distance_matrix = (dist_comp_norm + dist_host_norm + dist_func_norm) 
+        fused_distance_matrix = dist_comp_norm + dist_host_norm + dist_func_norm
         self.dist_matrix_embeddings = {
             "comp": dist_comp_norm,
             "host": dist_host_norm,
             "func": dist_func_norm,
-            "fused": fused_distance_matrix
+            "fused": fused_distance_matrix,
         }
 
     def _evaluate(self):
@@ -106,21 +102,21 @@ class UnsupervisedClassifier:
     def _visualize(self):
         self.logger.info("--- MULTI-DIMENSIONAL SCALING ---")
         mds = MDS(
-            init="classical_mds", 
-            n_components=2, 
-            metric='precomputed', 
-            random_state=42, 
-            normalized_stress='auto', 
-            n_init=1
+            init="classical_mds",
+            n_components=2,
+            metric="precomputed",
+            random_state=42,
+            normalized_stress="auto",
+            n_init=1,
         )
         for name, matrix in self.dist_matrix_embeddings.items():
             self.mds_embeddings[name] = mds.fit_transform(matrix)
         plot_path = os.path.join(self.saver.exp_dir, "mds_plot.pdf")
         Visualizer.plot_unsupervised_grid(
-            coords_dict=self.mds_embeddings, 
-            y_aligned=self.labels, 
+            coords_dict=self.mds_embeddings,
+            y_aligned=self.labels,
             sample_ids=self.common_samples,
-            save_path=plot_path
+            save_path=plot_path,
         )
         self.logger.info(f"MDS Plot Grid Saved: {plot_path}")
 

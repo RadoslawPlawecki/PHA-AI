@@ -3,10 +3,11 @@ CLI prompts for the classification workflow.
 """
 
 from pathlib import Path
+
 import questionary
 
-from phantom.config.loader import ConfigLoader
 from phantom.config.features import FeatureConfigManager
+from phantom.config.loader import ConfigLoader
 
 RUN_TYPE_DIR_LABELS = {"single": "single-omic", "multi": "multi-omic", "unsupervised": "mds"}
 
@@ -29,17 +30,22 @@ class ClassificationPrompts:
             "multi": "Multi-Omic Classifier (Fusion)",
             "unsupervised": "Unsupervised Exploration (MDS)",
         }
-        choice = questionary.select("Select classification mode:", choices=list(labels.values())).ask()
+        choice = questionary.select(
+            "Select classification mode:", choices=list(labels.values())
+        ).ask()
         if choice is None:
             return None
         return list(labels)[list(labels.values()).index(choice)]
 
     @staticmethod
     def ask_validators() -> tuple[bool, bool]:
-        choices = questionary.checkbox(
-            "Select validation method(s) to run:",
-            choices=["LOOCV", "Repeated Stratified CV"],
-        ).ask() or []
+        choices = (
+            questionary.checkbox(
+                "Select validation method(s) to run:",
+                choices=["LOOCV", "Repeated Stratified CV"],
+            ).ask()
+            or []
+        )
         return "LOOCV" in choices, "Repeated Stratified CV" in choices
 
     @staticmethod
@@ -71,8 +77,11 @@ class ClassificationPrompts:
         if not opt:
             return False, 0
         n_trials = questionary.text(
-            "Number of Optuna trials:", default="30",
-            validate=lambda text: text.isdigit() and int(text) >= 1 or "Enter a positive integer."
+            "Number of Optuna trials:",
+            default="30",
+            validate=lambda text: (
+                (text.isdigit() and int(text) >= 1) or "Enter a positive integer."
+            ),
         ).ask()
         return True, int(n_trials)
 
@@ -95,7 +104,11 @@ class ClassificationPrompts:
 
     @staticmethod
     def ask_omic_file(
-        config_mgr: FeatureConfigManager, version: str, omic: str, omics: dict, vtool: str | None = None
+        config_mgr: FeatureConfigManager,
+        version: str,
+        omic: str,
+        omics: dict,
+        vtool: str | None = None,
     ) -> Path | None:
         tool = omics[omic]["tool"]
         tag = omics[omic]["tag"]

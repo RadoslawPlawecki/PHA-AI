@@ -3,8 +3,9 @@
 """
 
 from collections import Counter
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 
 class ReportFormatter:
@@ -29,7 +30,9 @@ class ReportFormatter:
         )
 
     @staticmethod
-    def format_nested_comparison(full_metrics: dict, ablation_metrics: dict, target_metric: str) -> str:
+    def format_nested_comparison(
+        full_metrics: dict, ablation_metrics: dict, target_metric: str
+    ) -> str:
         full_score = ReportFormatter.format_metric(full_metrics[target_metric])
         ablation_score = ReportFormatter.format_metric(ablation_metrics[target_metric])
         return (
@@ -64,7 +67,9 @@ class ReportFormatter:
         )
 
     @staticmethod
-    def format_top_features(importances: np.ndarray, feature_names: list, X: np.ndarray, y: np.ndarray, k: int = 10) -> str:
+    def format_top_features(
+        importances: np.ndarray, feature_names: list, X: np.ndarray, y: np.ndarray, k: int = 10
+    ) -> str:
         lines = [
             "\nTop Features & Class Characteristics:",
             f"{'No.':>3} {'Feature':<33} | {'Importance':>10} | {'Mean Class 0':>12} | {'Mean Class 1':>12}",
@@ -85,12 +90,18 @@ class ReportFormatter:
         return "\n".join(lines) + "\n"
 
     @staticmethod
-    def format_misclassified_samples(y_true: np.ndarray, y_pred: np.ndarray, 
-                                     test_idx: np.ndarray, sample_ids: pd.Series, top_k: int = 10) -> str:
+    def format_misclassified_samples(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        test_idx: np.ndarray,
+        sample_ids: pd.Series,
+        top_k: int = 10,
+    ) -> str:
         fp_indices = test_idx[(y_true == 0) & (y_pred == 1)]
         fn_indices = test_idx[(y_true == 1) & (y_pred == 0)]
         fp_counts = Counter(fp_indices)
         fn_counts = Counter(fn_indices)
+
         def format_block(title: str, counts: Counter) -> str:
             if not counts:
                 return f"{title}: None"
@@ -102,6 +113,7 @@ class ReportFormatter:
                 else:
                     parts.append(label)
             return f"{title}: " + ", ".join(parts)
+
         fp_line = format_block("False Positives", fp_counts)
         fn_line = format_block("False Negatives", fn_counts)
         return "\nMisclassified Samples:\n" + fp_line + "\n" + fn_line + "\n"

@@ -12,7 +12,8 @@ import pandas as pd
 
 from phantom.cli.features import FeatureOptimizationPrompts
 from phantom.config.features import FeatureConfigManager
-from .search_core import RunConfig, SEARCH_FNS, _load_preprocessed
+
+from .search_core import SEARCH_FNS, RunConfig, _load_preprocessed
 from .strategies.exploratory import run_exploratory
 
 
@@ -50,20 +51,23 @@ class FeatureOptimizer:
         os.makedirs(out_dir, exist_ok=True)
 
         from phantom.classification.analytics.saver import ExperimentSaver
-        ExperimentSaver(exp_dir=str(out_dir)).save_metadata({
-            "tool": tool,
-            "mode": mode,
-            "model": config.model,
-            "validator": config.validator,
-            "metric": config.metric,
-            "smote": config.smote,
-            "outer_folds": outer_folds,
-            "outer_repeats": outer_repeats,
-            "inner_trials": inner_trials,
-            "top_k_features": top_k_features,
-            "n_permutations": n_permutations,
-            "permutation_trials": permutation_trials,
-        })
+
+        ExperimentSaver(exp_dir=str(out_dir)).save_metadata(
+            {
+                "tool": tool,
+                "mode": mode,
+                "model": config.model,
+                "validator": config.validator,
+                "metric": config.metric,
+                "smote": config.smote,
+                "outer_folds": outer_folds,
+                "outer_repeats": outer_repeats,
+                "inner_trials": inner_trials,
+                "top_k_features": top_k_features,
+                "n_permutations": n_permutations,
+                "permutation_trials": permutation_trials,
+            }
+        )
 
         source_path, loaded_df = _load_preprocessed(tool, self.config_mgr)
 
@@ -76,38 +80,63 @@ class FeatureOptimizer:
 
         if mode in ("permutation", "all"):
             _run_mode_permutation(
-                config, tool, loaded_df, out_dir,
-                n_permutations=n_permutations, permutation_trials=permutation_trials,
+                config,
+                tool,
+                loaded_df,
+                out_dir,
+                n_permutations=n_permutations,
+                permutation_trials=permutation_trials,
                 observed_score=observed,
             )
         if mode in ("nested", "all"):
             _run_mode_nested(
-                config, tool, loaded_df, out_dir,
-                outer_folds=outer_folds, outer_repeats=outer_repeats,
-                inner_trials=inner_trials, top_k_features=top_k_features,
+                config,
+                tool,
+                loaded_df,
+                out_dir,
+                outer_folds=outer_folds,
+                outer_repeats=outer_repeats,
+                inner_trials=inner_trials,
+                top_k_features=top_k_features,
             )
 
 
 def _run_mode_nested(
-    config: RunConfig, tool: str, df: pd.DataFrame, out_dir,
-    outer_folds: int, outer_repeats: int, inner_trials: int | None, top_k_features: int,
+    config: RunConfig,
+    tool: str,
+    df: pd.DataFrame,
+    out_dir,
+    outer_folds: int,
+    outer_repeats: int,
+    inner_trials: int | None,
+    top_k_features: int,
 ) -> None:
     from phantom.classification.analytics.reporter import ReportFormatter
     from phantom.classification.analytics.saver import ExperimentSaver
     from phantom.classification.ml.evaluator import EvaluatorSl
+
     from .strategies.nested_cv import run_nested_cv
 
     result = run_nested_cv(
-        tool, df,
-        model_name=config.model, validator_name=config.validator, target_metric=config.metric,
-        use_smote=config.smote, outer_folds=outer_folds, outer_repeats=outer_repeats,
-        inner_trials=inner_trials, top_k=top_k_features,
+        tool,
+        df,
+        model_name=config.model,
+        validator_name=config.validator,
+        target_metric=config.metric,
+        use_smote=config.smote,
+        outer_folds=outer_folds,
+        outer_repeats=outer_repeats,
+        inner_trials=inner_trials,
+        top_k=top_k_features,
     )
     full_metrics = EvaluatorSl.evaluate(
         result.full.y_true, result.full.y_pred, result.full.y_prob, result.full.patient_ids
     )
     ablation_metrics = EvaluatorSl.evaluate(
-        result.ablation.y_true, result.ablation.y_pred, result.ablation.y_prob, result.ablation.patient_ids
+        result.ablation.y_true,
+        result.ablation.y_pred,
+        result.ablation.y_prob,
+        result.ablation.patient_ids,
     )
     print(ReportFormatter.format_nested_comparison(full_metrics, ablation_metrics, config.metric))
 
@@ -116,51 +145,79 @@ def _run_mode_nested(
     saver = ExperimentSaver(exp_dir=nested_dir)
     saver.save_metrics(dict(full_metrics), subfolder="full")
     saver.save_predictions(
-        result.full.y_true, result.full.y_pred, result.full.y_prob,
-        sample_ids=result.full.patient_ids, folds=result.full.fold, repeats=result.full.repeat,
+        result.full.y_true,
+        result.full.y_pred,
+        result.full.y_prob,
+        sample_ids=result.full.patient_ids,
+        folds=result.full.fold,
+        repeats=result.full.repeat,
         subfolder="full",
     )
     saver.save_metrics(dict(ablation_metrics), subfolder="ablation")
     saver.save_predictions(
-        result.ablation.y_true, result.ablation.y_pred, result.ablation.y_prob,
-        sample_ids=result.ablation.patient_ids, folds=result.ablation.fold, repeats=result.ablation.repeat,
+        result.ablation.y_true,
+        result.ablation.y_pred,
+        result.ablation.y_prob,
+        sample_ids=result.ablation.patient_ids,
+        folds=result.ablation.fold,
+        repeats=result.ablation.repeat,
         subfolder="ablation",
     )
     with open(os.path.join(nested_dir, "nested_meta.json"), "w") as f:
-        json.dump({
-            "per_fold_best_params": result.per_fold_best_params,
-            "per_fold_top_features": result.per_fold_top_features,
-            "skipped_folds": result.skipped_folds,
-        }, f, indent=2, default=str)
+        json.dump(
+            {
+                "per_fold_best_params": result.per_fold_best_params,
+                "per_fold_top_features": result.per_fold_top_features,
+                "skipped_folds": result.skipped_folds,
+            },
+            f,
+            indent=2,
+            default=str,
+        )
 
 
 def _run_mode_permutation(
-    config: RunConfig, tool: str, df: pd.DataFrame, out_dir,
-    n_permutations: int, permutation_trials: int | None, observed_score: float | None = None,
+    config: RunConfig,
+    tool: str,
+    df: pd.DataFrame,
+    out_dir,
+    n_permutations: int,
+    permutation_trials: int | None,
+    observed_score: float | None = None,
 ) -> None:
     from phantom.classification.analytics.reporter import ReportFormatter
+
     from .strategies.permutation_search import run_permutation_test
 
     result = run_permutation_test(
-        tool, df,
-        model_name=config.model, validator_name=config.validator, target_metric=config.metric,
-        use_smote=config.smote, n_permutations=n_permutations,
-        permutation_trials=permutation_trials, observed_score=observed_score,
+        tool,
+        df,
+        model_name=config.model,
+        validator_name=config.validator,
+        target_metric=config.metric,
+        use_smote=config.smote,
+        n_permutations=n_permutations,
+        permutation_trials=permutation_trials,
+        observed_score=observed_score,
     )
     print(ReportFormatter.format_permutation_test(result, config.metric))
 
     perm_dir = os.path.join(out_dir, "permutation")
     os.makedirs(perm_dir, exist_ok=True)
     with open(os.path.join(perm_dir, "permutation_test.json"), "w") as f:
-        json.dump({
-            "tool": result.tool,
-            "observed_score": result.observed_score,
-            "null_scores": result.null_scores.tolist(),
-            "p_value": result.p_value,
-            "baseline_score": result.baseline_score,
-            "n_permutations": result.n_permutations,
-            "permutation_trials": result.permutation_trials,
-        }, f, indent=2)
+        json.dump(
+            {
+                "tool": result.tool,
+                "observed_score": result.observed_score,
+                "null_scores": result.null_scores.tolist(),
+                "p_value": result.p_value,
+                "baseline_score": result.baseline_score,
+                "n_permutations": result.n_permutations,
+                "permutation_trials": result.permutation_trials,
+            },
+            f,
+            indent=2,
+        )
 
 
 if __name__ == "__main__":

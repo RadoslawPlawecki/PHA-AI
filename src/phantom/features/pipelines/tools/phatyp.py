@@ -22,11 +22,14 @@ class PhatypFeaturePipeline:
         df = df.copy()
         df["PhaTYPScore"] = pd.to_numeric(df["PhaTYPScore"], errors="coerce")
         df = df[df["PhaTYPScore"] >= self.min_phatyp_score]
-        return df[['Accession', 'TYPE']]
+        return df[["Accession", "TYPE"]]
 
     def build_feature_matrix(
-        self, df: pd.DataFrame, feature_col: str | None = None,
-        binary: bool | None = None, min_patients: int | None = None
+        self,
+        df: pd.DataFrame,
+        feature_col: str | None = None,
+        binary: bool | None = None,
+        min_patients: int | None = None,
     ) -> pd.DataFrame:
         # feature_col/binary/min_patients are unused: TYPE is the only
         # feature axis, not interactively chosen. Kept for a uniform

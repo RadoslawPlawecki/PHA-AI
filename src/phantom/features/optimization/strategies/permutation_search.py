@@ -16,6 +16,7 @@ from tqdm import tqdm
 from phantom.classification.data.labeling import Labeling
 from phantom.classification.ml.significance import Significance
 from phantom.features.pipelines.matrix import derive_patient_id, filter_accessions
+
 from ..search_core import DEFAULT_TRIALS, SEARCH_FNS
 
 
@@ -44,7 +45,9 @@ def run_permutation_test(
     random_state: int = 42,
 ) -> PermutationTestResult:
     search_fn = SEARCH_FNS[tool]
-    permutation_trials = permutation_trials if permutation_trials is not None else DEFAULT_TRIALS[tool]
+    permutation_trials = (
+        permutation_trials if permutation_trials is not None else DEFAULT_TRIALS[tool]
+    )
 
     df = filter_accessions(df)
     patient_ids_all = derive_patient_id(df["Accession"])
@@ -53,8 +56,12 @@ def run_permutation_test(
 
     if observed_score is None:
         observed_study = search_fn(
-            df, model_name=model_name, validator_name=validator_name,
-            target_metric=target_metric, use_smote=use_smote, verbose=False,
+            df,
+            model_name=model_name,
+            validator_name=validator_name,
+            target_metric=target_metric,
+            use_smote=use_smote,
+            verbose=False,
         )
         observed_score = observed_study.best_value
 
@@ -68,9 +75,14 @@ def run_permutation_test(
         shuffled_labels = rng.permutation(true_labels)
         y_override = pd.Series(shuffled_labels, index=unique_patients)
         study = search_fn(
-            df, model_name=model_name, validator_name=validator_name,
-            target_metric=target_metric, use_smote=use_smote,
-            n_trials=permutation_trials, y_override=y_override, verbose=False,
+            df,
+            model_name=model_name,
+            validator_name=validator_name,
+            target_metric=target_metric,
+            use_smote=use_smote,
+            n_trials=permutation_trials,
+            y_override=y_override,
+            verbose=False,
         )
         null_scores.append(study.best_value)
         per_permutation_best_params.append(study.best_params)

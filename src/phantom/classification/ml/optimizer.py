@@ -2,27 +2,30 @@
 @author: Radosław Pławecki
 """
 
-import optuna
 import os
 import tempfile
-import pandas as pd
+from typing import Any
+
 import numpy as np
-from typing import Callable, Any
+import optuna
+import pandas as pd
+
 from phantom.classification.data.data_loader import DataLoader
 from phantom.classification.data.preprocessor import NearZeroVarianceFilter
+
+from .evaluator import EvaluatorSl
 from .models import (
-    get_catboost_model,
     MultiOmicModel,
 )
 from .validators import (
-    LOOCVValidator,
     LateFusionLOOCVValidator,
 )
-from .evaluator import EvaluatorSl
 
 
 class LateFusionWeightOptimizer:
-    def __init__(self, model_factories, config, paths, logger=None, n_trials=30, target_metric="mcc"):
+    def __init__(
+        self, model_factories, config, paths, logger=None, n_trials=30, target_metric="mcc"
+    ):
         self.model_factories = model_factories
         self.config = config
         self.paths = paths
@@ -38,15 +41,18 @@ class LateFusionWeightOptimizer:
                 "host": trial.suggest_float("weight_host", 0.0, 1.0),
             }
             fusion_models = {
-                m: self.model_factories[self.config.model_type](use_smote=self.config.use_smote) 
+                m: self.model_factories[self.config.model_type](use_smote=self.config.use_smote)
                 for m in self.paths
             }
             model = MultiOmicModel(models_dict=fusion_models, weights=weights)
             validator = LateFusionLOOCVValidator(verbose=False)
             results = validator.run(model, X_data, y_aligned)
-            metrics = EvaluatorSl.evaluate(results.y_true, results.y_pred, results.y_prob, results.test_idx)
+            metrics = EvaluatorSl.evaluate(
+                results.y_true, results.y_pred, results.y_prob, results.test_idx
+            )
             score = metrics[self.target_metric]
             return score["score"]
+
         optuna.logging.set_verbosity(optuna.logging.WARNING)
         study = optuna.create_study(direction="maximize")
         study.optimize(objective, n_trials=self.n_trials)
@@ -58,7 +64,7 @@ class LateFusionWeightOptimizer:
         best_score = study.best_value
         self._log_optimize(best_weights=best_weights, best_score=best_score)
         return best_weights
-        
+
     def _log_optimize(self, best_weights: dict, best_score: float) -> None:
         msg = (
             f"\nOptuna optimization results:\n"
@@ -75,8 +81,15 @@ class LateFusionWeightOptimizer:
 
 
 class FeatureExtractionOptimizer:
-    def __init__(self, model: Any, validator: Any, target_metric: str = 'mcc', 
-                 nzv_threshold: float = 4e-5, min_features: int = 3, logger=None):
+    def __init__(
+        self,
+        model: Any,
+        validator: Any,
+        target_metric: str = "mcc",
+        nzv_threshold: float = 4e-5,
+        min_features: int = 3,
+        logger=None,
+    ):
         self.model = model
         self.validator = validator
         self.target_metric = target_metric
@@ -85,8 +98,8 @@ class FeatureExtractionOptimizer:
         self.logger = logger
 
     def run(self, feature_matrix: pd.DataFrame, y_override: pd.Series | None = None) -> float:
-        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode='w') as tmp:
-            feature_matrix.to_csv(tmp.name, sep=';', index=False)
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False, mode="w") as tmp:
+            feature_matrix.to_csv(tmp.name, sep=";", index=False)
             tmp_path = tmp.name
         try:
             loader = DataLoader(input_path=tmp_path, logger=self.logger)
@@ -101,7 +114,7 @@ class FeatureExtractionOptimizer:
             if X.empty or X.shape[1] < self.min_features or len(np.unique(labels)) <= 1:
                 return 0.0
             nzv = NearZeroVarianceFilter(logger=self.logger, threshold=self.nzv_threshold)
-            values, feature_names = nzv.fit_transform(X)
+            values, _feature_names = nzv.fit_transform(X)
             if values.shape[1] == 0:
                 return 0.0
             if isinstance(values, pd.DataFrame):
@@ -110,18 +123,14 @@ class FeatureExtractionOptimizer:
                 values = np.array(values, copy=True)
             results = self.validator.run(self.model, values, labels)
             metrics = EvaluatorSl.evaluate(
-                results.y_true,
-                results.y_pred,
-                results.y_prob,
-                results.test_idx
+                results.y_true, results.y_pred, results.y_prob, results.test_idx
             )
-            metric_value = metrics.get(self.target_metric, 0.0) 
+            metric_value = metrics.get(self.target_metric, 0.0)
             if isinstance(metric_value, dict):
-                metric_value = metric_value.get('score', 0.0)   
+                metric_value = metric_value.get("score", 0.0)
             return float(metric_value)
         except KeyError:
             return 0.0
         finally:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)
-                

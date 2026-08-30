@@ -28,22 +28,31 @@ class CherryFeaturePipeline:
         df["CHERRYScore"] = pd.to_numeric(df["CHERRYScore"], errors="coerce")
         df = df[df["CHERRYScore"] >= self.min_cherry_score]
         df = df[
-            ~(
-                (df["Host_NCBI_lineage"] == "-") &
-                (df["Host_GTDB_lineage"].isin(["-", "Not found"]))
-            )
+            ~((df["Host_NCBI_lineage"] == "-") & (df["Host_GTDB_lineage"].isin(["-", "Not found"])))
         ]
-        df = split_taxonomy(df, col="Host_NCBI_lineage", lineage_type='ncbi')
-        df = split_taxonomy(df, col="Host_GTDB_lineage", lineage_type='gtdb')
+        df = split_taxonomy(df, col="Host_NCBI_lineage", lineage_type="ncbi")
+        df = split_taxonomy(df, col="Host_GTDB_lineage", lineage_type="gtdb")
         df = df[df["ncbi_domain"] == "Bacteria"]
         df = df[df["ncbi_genus"] != "NAmissing"]
         df = df[df["ncbi_species"] != "bacterium"]
-        return df[['Accession', 'ncbi_phylum', 'ncbi_class', 'ncbi_order',
-                    'ncbi_family', 'ncbi_genus', 'ncbi_species']]
+        return df[
+            [
+                "Accession",
+                "ncbi_phylum",
+                "ncbi_class",
+                "ncbi_order",
+                "ncbi_family",
+                "ncbi_genus",
+                "ncbi_species",
+            ]
+        ]
 
     def build_feature_matrix(
-        self, df: pd.DataFrame, feature_col: str,
-        binary: bool | None = None, min_patients: int | None = None
+        self,
+        df: pd.DataFrame,
+        feature_col: str,
+        binary: bool | None = None,
+        min_patients: int | None = None,
     ) -> pd.DataFrame:
         return build_taxonomy_matrix(
             df,

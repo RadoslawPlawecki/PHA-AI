@@ -4,8 +4,10 @@ Contains CLI prompts used during the feature processing workflow.
 
 from pathlib import Path
 from typing import ClassVar
-import questionary
+
 import pandas as pd
+import questionary
+
 from phantom.config.loader import ConfigLoader
 
 
@@ -55,16 +57,16 @@ class FeatureCollectionPrompts:
             choices.append("Append to an existing version")
         choices.append("Cancel")
         return questionary.select(
-            "How would you like to version these features?",
-            choices=choices
+            "How would you like to version these features?", choices=choices
         ).ask()
 
     @staticmethod
     def ask_new_version() -> str:
         return questionary.text(
             "Enter the new version number (e.g., '1.0', '1.1', '2.0'):",
-            validate=lambda text: len(text) > 0 and "." in text 
-            or "Version should typically be in 'X.Y' format."
+            validate=lambda text: (
+                (len(text) > 0 and "." in text) or "Version should typically be in 'X.Y' format."
+            ),
         ).ask()
 
     @staticmethod
@@ -74,8 +76,7 @@ class FeatureCollectionPrompts:
     @staticmethod
     def ask_id_column(tool_path_str: str, columns: list[str]) -> str:
         return questionary.select(
-            f"Select the sequence/contig ID column for [{tool_path_str}]:",
-            choices=columns
+            f"Select the sequence/contig ID column for [{tool_path_str}]:", choices=columns
         ).ask()
 
 
@@ -85,9 +86,7 @@ class FeatureExtractionPrompts:
         self.config = config if config is not None else loader.load()
         self.tool_map = self.config.get("tools", {})
         mask_path_str = self.config.get("masks", {}).get("path")
-        self.mask_root = (
-            ConfigLoader.resolve_data_path(mask_path_str) if mask_path_str else None
-        )
+        self.mask_root = ConfigLoader.resolve_data_path(mask_path_str) if mask_path_str else None
 
     def _get_tool_mask_dir(self, in_root: Path) -> Path | None:
         if not self.mask_root:
@@ -96,7 +95,9 @@ class FeatureExtractionPrompts:
         tool_prefix = in_root.stem.split("_")[0]
         tool_name = self.tool_map.get(tool_prefix)
         if tool_name is None:
-            print(f"[WARNING] Unknown tool prefix '{tool_prefix}'. Please add it to the [tools] section in config.toml.")
+            print(
+                f"[WARNING] Unknown tool prefix '{tool_prefix}'. Please add it to the [tools] section in config.toml."
+            )
             return None
         return self.mask_root / tool_name
 
@@ -131,20 +132,17 @@ class FeatureExtractionPrompts:
         return selected_path
 
     def ask_column(self, df: pd.DataFrame) -> str:
-        selectable_columns = [col for col in df.columns if col not in {'Accession', 'id'}]
+        selectable_columns = [col for col in df.columns if col not in {"Accession", "id"}]
         if not selectable_columns:
             raise ValueError("No valid columns to choose from.")
-        col = questionary.select(
-            "Choose a column:",
-            choices=selectable_columns
-        ).ask()
+        col = questionary.select("Choose a column:", choices=selectable_columns).ask()
         print(f"\n[INFO] Selected column: {col}")
         return col
 
     def ask_binary(self, default: bool = True) -> bool:
         binary = questionary.confirm(
             "Use binary (presence/absence) matrix representation? (No = occurrence counts)",
-            default=default
+            default=default,
         ).ask()
         print(f"\n[INFO] Matrix representation: {'binary' if binary else 'count'}")
         return binary
@@ -153,8 +151,10 @@ class FeatureExtractionPrompts:
         answer = questionary.text(
             f"Minimum number of patients a feature must appear in to be kept (1-{max_value}):",
             default=str(default),
-            validate=lambda text: text.isdigit() and 1 <= int(text) <= max_value
-            or f"Enter an integer between 1 and {max_value}."
+            validate=lambda text: (
+                (text.isdigit() and 1 <= int(text) <= max_value)
+                or f"Enter an integer between 1 and {max_value}."
+            ),
         ).ask()
         min_patients = int(answer)
         print(f"\n[INFO] Minimum patients: {min_patients}")
@@ -179,10 +179,7 @@ class FeatureOptimizationPrompts:
             return None
         if len(files) == 1:
             return files[0]
-        choice = questionary.select(
-            f"Select {label} file:",
-            choices=[f.name for f in files]
-        ).ask()
+        choice = questionary.select(f"Select {label} file:", choices=[f.name for f in files]).ask()
         if not choice:
             return None
         return next(f for f in files if f.name == choice)
@@ -191,7 +188,9 @@ class FeatureOptimizationPrompts:
     def ask_mode_choice() -> str | None:
         labels = list(FeatureOptimizationPrompts.MODE_CHOICES.values())
         keys = list(FeatureOptimizationPrompts.MODE_CHOICES.keys())
-        choice = questionary.select("Select evaluation mode:", choices=labels, default=labels[0]).ask()
+        choice = questionary.select(
+            "Select evaluation mode:", choices=labels, default=labels[0]
+        ).ask()
         if choice is None:
             return None
         return keys[labels.index(choice)]
@@ -221,8 +220,11 @@ class FeatureOptimizationPrompts:
     @staticmethod
     def _ask_positive_int(message: str, default: int) -> int:
         answer = questionary.text(
-            message, default=str(default),
-            validate=lambda text: text.isdigit() and int(text) >= 1 or "Enter a positive integer."
+            message,
+            default=str(default),
+            validate=lambda text: (
+                (text.isdigit() and int(text) >= 1) or "Enter a positive integer."
+            ),
         ).ask()
         return int(answer)
 
@@ -244,8 +246,11 @@ class FeatureOptimizationPrompts:
             "Nested CV: Optuna trial budget per outer fold's inner search "
             "(leave blank for the tool's normal full budget):",
             default="",
-            validate=lambda text: text == "" or (text.isdigit() and int(text) >= 1)
-            or "Enter a positive integer, or leave blank."
+            validate=lambda text: (
+                text == ""
+                or (text.isdigit() and int(text) >= 1)
+                or "Enter a positive integer, or leave blank."
+            ),
         ).ask()
         return int(answer) if answer else None
 
@@ -261,8 +266,11 @@ class FeatureOptimizationPrompts:
             "Permutation test: Optuna trial budget per rep "
             "(leave blank to match the tool's full search budget):",
             default="",
-            validate=lambda text: text == "" or (text.isdigit() and int(text) >= 1)
-            or "Enter a positive integer, or leave blank."
+            validate=lambda text: (
+                text == ""
+                or (text.isdigit() and int(text) >= 1)
+                or "Enter a positive integer, or leave blank."
+            ),
         ).ask()
         return int(answer) if answer else None
 

@@ -3,14 +3,15 @@ Builds final feature matrices from preprocessed per-tool feature data.
 """
 
 from pathlib import Path
+
 import pandas as pd
 
 from phantom.cli.features import FeatureExtractionPrompts
 from phantom.config.features import FeatureConfigManager
 from phantom.features.pipelines.tools.cherry import CherryFeaturePipeline
 from phantom.features.pipelines.tools.phagcn import PhagcnFeaturePipeline
-from phantom.features.pipelines.tools.phavip import PhavipFeaturePipeline
 from phantom.features.pipelines.tools.phatyp import PhatypFeaturePipeline
+from phantom.features.pipelines.tools.phavip import PhavipFeaturePipeline
 
 PIPELINES = {
     "cherry": CherryFeaturePipeline,
@@ -49,7 +50,7 @@ class FeatureExtractor:
 
     def _process_file(self, tool: str, pipeline, preprocessed_file: Path) -> None:
         print(f"\n[INFO] Extracting features for {tool}/{preprocessed_file.name}...")
-        df = pd.read_csv(preprocessed_file, sep=';')
+        df = pd.read_csv(preprocessed_file, sep=";")
         feature_col = self.prompts.ask_column(df) if pipeline.NEEDS_FEATURE_COLUMN else None
         if pipeline.NEEDS_MATRIX_OPTIONS:
             binary = self.prompts.ask_binary(default=pipeline.binary)
@@ -66,5 +67,5 @@ class FeatureExtractor:
         if stem.endswith("_M_PP"):
             stem = stem[: -len("_M_PP")]
         out_path = out_dir / f"{stem}_FEAT.csv"
-        feature_matrix.to_csv(out_path, sep=';', index=False)
+        feature_matrix.to_csv(out_path, sep=";", index=False)
         print(f"       Saved to: {out_path} (Shape: {feature_matrix.shape})")

@@ -5,7 +5,7 @@ identification tool and move them into a dedicated output directory.
 
 import re
 import shutil
-from pathlib import Path
+
 import pandas as pd
 
 from phantom.config.loader import ConfigLoader
@@ -43,7 +43,7 @@ class GenomeCollector:
         all_samples = {}
         for tool_abbr, tool_name in self.tools_map.items():
             tool_config = self.config.get(tool_name)
-            if not tool_config: 
+            if not tool_config:
                 continue
             root = ConfigLoader.resolve_data_path(tool_config["path"])
             dest_dir = self.base_dest / tool_name
@@ -57,7 +57,7 @@ class GenomeCollector:
                     sample_id = subfolder.split("_")[0]
                     formatted_name = f"{subfolder}.fna"
                 else:
-                    if not auto_format: 
+                    if not auto_format:
                         continue
                     sample_id = f"S{sample_counter}"
                     formatted_name = f"{sample_id}_{tool_abbr}.fna"
@@ -70,4 +70,3 @@ class GenomeCollector:
                 sample[f"{tool_abbr}_original_file"] = file.name
                 sample[f"{tool_abbr}_formatted_file"] = formatted_name
         return pd.DataFrame(list(all_samples.values()))
-    

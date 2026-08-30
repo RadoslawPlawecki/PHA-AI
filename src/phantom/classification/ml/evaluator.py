@@ -4,20 +4,20 @@
 
 from typing import ClassVar
 
+import numpy as np
+from imblearn.metrics import geometric_mean_score
+from skbio.stats.distance import DistanceMatrix, permanova
 from sklearn.metrics import (
-    roc_auc_score,
+    average_precision_score,
     balanced_accuracy_score,
+    confusion_matrix,
     f1_score,
+    matthews_corrcoef,
     precision_score,
     recall_score,
-    confusion_matrix,
-    average_precision_score,
-    matthews_corrcoef
+    roc_auc_score,
+    silhouette_score,
 )
-from imblearn.metrics import geometric_mean_score
-import numpy as np
-from sklearn.metrics import silhouette_score
-from skbio.stats.distance import DistanceMatrix, anosim, permanova
 
 
 class EvaluatorSl:
@@ -32,26 +32,17 @@ class EvaluatorSl:
         "gmean": lambda yt, yp, ypb: geometric_mean_score(yt, yp),
     }
 
-
     @staticmethod
     def evaluate(y_true, y_pred, y_prob, test_idx):
         results = {}
         for name, metric_fn in EvaluatorSl.METRICS.items():
             score = metric_fn(y_true, y_pred, y_prob)
-            metric_result = {
-                "score": score
-            }
+            metric_result = {"score": score}
             results[name] = metric_result
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
-        results["specificity"] = {
-            "score": tn / (tn + fp) if (tn + fp) > 0 else 0.0
-        }
-        results["sensitivity"] = {
-            "score": results["recall"]["score"]
-        }
-        results["npv"] = {
-            "score": tn / (tn + fn) if (tn + fn) > 0 else 0.0
-        }
+        results["specificity"] = {"score": tn / (tn + fp) if (tn + fp) > 0 else 0.0}
+        results["sensitivity"] = {"score": results["recall"]["score"]}
+        results["npv"] = {"score": tn / (tn + fn) if (tn + fn) > 0 else 0.0}
         results["confusion_matrix"] = {
             "TP": int(tp),
             "TN": int(tn),
@@ -74,10 +65,12 @@ class EvaluatorSl:
 
 class EvaluatorUl:
     METRICS: ClassVar[dict] = {
-        "silhouette": lambda dist_matrix, labels:
-            silhouette_score(dist_matrix, labels, metric="precomputed"),
-        "permanova": lambda dist_matrix, labels:
-            permanova(DistanceMatrix(dist_matrix), labels, permutations=999),
+        "silhouette": lambda dist_matrix, labels: silhouette_score(
+            dist_matrix, labels, metric="precomputed"
+        ),
+        "permanova": lambda dist_matrix, labels: permanova(
+            DistanceMatrix(dist_matrix), labels, permutations=999
+        ),
     }
 
     @staticmethod
@@ -86,13 +79,10 @@ class EvaluatorUl:
         for name, metric_fn in EvaluatorUl.METRICS.items():
             result = metric_fn(dist_matrix, labels)
             if name == "silhouette":
-                results[name] = {
-                    "score": float(result)
-                }
+                results[name] = {"score": float(result)}
             else:
                 results[name] = {
                     "statistic": float(result["test statistic"]),
                     "p_value": float(result["p-value"]),
                 }
         return results
-        

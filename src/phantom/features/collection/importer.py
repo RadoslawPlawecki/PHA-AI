@@ -4,9 +4,11 @@ Coordinates importing feature sources into the project structure.
 
 import shutil
 from pathlib import Path
+
 import questionary
-from phantom.config.features import FeatureConfigManager
+
 from phantom.cli.features import FeatureCollectionPrompts
+from phantom.config.features import FeatureConfigManager
 
 
 class FeatureImporter:

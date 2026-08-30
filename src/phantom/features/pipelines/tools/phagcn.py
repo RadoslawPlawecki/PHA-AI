@@ -38,11 +38,14 @@ class PhagcnFeaturePipeline:
 
         taxonomy_df = df.apply(extract_taxonomy, axis=1)
         df = pd.concat([df, taxonomy_df], axis=1)
-        return df[['Accession', 'genus']]
+        return df[["Accession", "genus"]]
 
     def build_feature_matrix(
-        self, df: pd.DataFrame, feature_col: str = "genus",
-        binary: bool | None = None, min_patients: int | None = None
+        self,
+        df: pd.DataFrame,
+        feature_col: str = "genus",
+        binary: bool | None = None,
+        min_patients: int | None = None,
     ) -> pd.DataFrame:
         return build_taxonomy_matrix(
             df,

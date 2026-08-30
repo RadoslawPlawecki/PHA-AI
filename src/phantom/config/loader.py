@@ -3,9 +3,9 @@ Provides functionality to locate and load the project's TOML
 configuration file.
 """
 
-from pathlib import Path
 import sys
 import tomllib
+from pathlib import Path
 
 
 class ConfigLoader:
@@ -45,4 +45,3 @@ class ConfigLoader:
         with open(self.path, "rb") as f:
             self.config = tomllib.load(f)
         return self.config
-    

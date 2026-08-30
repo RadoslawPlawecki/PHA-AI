@@ -1,19 +1,19 @@
 """
-Controls the feature pipeline workflow: import/collection, merging, 
+Controls the feature pipeline workflow: import/collection, merging,
 preprocessing and extraction.
 """
 
 from pathlib import Path
 
-from phantom.config.loader import ConfigLoader
-from phantom.config.features import FeatureConfigManager
 from phantom.cli.features import FeatureCollectionPrompts, FeatureDiversityPrompts
-from phantom.features.collection.importer import FeatureImporter
-from phantom.features.merging.concatenator import FeatureConcatenator
-from phantom.features.preprocessing.preprocessor import FeaturePreprocessor
-from phantom.features.extraction.extractor import FeatureExtractor
-from phantom.features.optimization.optimizer import FeatureOptimizer
+from phantom.config.features import FeatureConfigManager
+from phantom.config.loader import ConfigLoader
 from phantom.features.analytics.diversity import DiversityAnalyzer
+from phantom.features.collection.importer import FeatureImporter
+from phantom.features.extraction.extractor import FeatureExtractor
+from phantom.features.merging.concatenator import FeatureConcatenator
+from phantom.features.optimization.optimizer import FeatureOptimizer
+from phantom.features.preprocessing.preprocessor import FeaturePreprocessor
 
 
 class FeatureController:
@@ -48,10 +48,7 @@ class FeatureController:
         if raw_path and raw_path.exists():
             version = raw_path.parent.name
             if FeatureCollectionPrompts.ask_auto_merge(version):
-                concatenator = FeatureConcatenator(
-                    version=version,
-                    config_mgr=self.config_mgr
-                )
+                concatenator = FeatureConcatenator(version=version, config_mgr=self.config_mgr)
                 concatenator.run()
 
     def _merge_features(self) -> None:
@@ -61,10 +58,7 @@ class FeatureController:
             return
         version = FeatureCollectionPrompts.ask_existing_version(existing_versions)
         if version:
-            concatenator = FeatureConcatenator(
-                version=version,
-                config_mgr=self.config_mgr
-            )
+            concatenator = FeatureConcatenator(version=version, config_mgr=self.config_mgr)
             concatenator.run()
 
     def _preprocess_features(self):

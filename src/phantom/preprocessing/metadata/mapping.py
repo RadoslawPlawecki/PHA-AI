@@ -4,9 +4,11 @@ dataset statistics.
 """
 
 from pathlib import Path
+
 import pandas as pd
 
-class MetadataManager():
+
+class MetadataManager:
     def __init__(self, path: Path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -21,7 +23,7 @@ class MetadataManager():
 
     def add_metadata_columns(self, new_df: pd.DataFrame):
         """
-        Merges new metadata on 'id'. Fails if duplicate columns (other 
+        Merges new metadata on 'id'. Fails if duplicate columns (other
         than 'id') exist.
         """
         if new_df.empty or "id" not in new_df.columns:
@@ -30,22 +32,15 @@ class MetadataManager():
         if current_df.empty:
             self.save(new_df)
             return
-        duplicate_cols = (
-            set(new_df.columns).intersection(current_df.columns) - {"id"}
-        )
+        duplicate_cols = set(new_df.columns).intersection(current_df.columns) - {"id"}
         if duplicate_cols:
-            raise ValueError(f"Duplicate columns found: {duplicate_cols}. Incrementing not allowed.")
+            raise ValueError(
+                f"Duplicate columns found: {duplicate_cols}. Incrementing not allowed."
+            )
         merged = pd.merge(current_df, new_df, on="id", how="outer")
         if "id" in merged.columns:
-            merged["_sort_key"] = (
-                merged["id"].str
-                            .extract(r'(\d+)', expand=False)
-                            .astype(float)
-            )
+            merged["_sort_key"] = merged["id"].str.extract(r"(\d+)", expand=False).astype(float)
             merged = (
-                merged.sort_values("_sort_key")
-                      .drop(columns=["_sort_key"])
-                      .reset_index(drop=True)
+                merged.sort_values("_sort_key").drop(columns=["_sort_key"]).reset_index(drop=True)
             )
         self.save(merged)
-        

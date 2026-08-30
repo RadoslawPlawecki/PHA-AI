@@ -22,12 +22,16 @@ import pandas as pd
 from phantom.classification.ml.models import get_catboost_model, get_rf_model, get_xgb_model
 from phantom.classification.ml.optimizer import FeatureExtractionOptimizer
 from phantom.classification.ml.validators import LOOCVValidator, RepeatedCVValidator
-from phantom.cli.features import FeatureCollectionPrompts, FeatureExtractionPrompts, FeatureOptimizationPrompts
+from phantom.cli.features import (
+    FeatureCollectionPrompts,
+    FeatureExtractionPrompts,
+    FeatureOptimizationPrompts,
+)
 from phantom.config.features import FeatureConfigManager
+from phantom.features.pipelines.matrix import build_taxonomy_matrix
 from phantom.features.pipelines.tools.cherry import CherryFeaturePipeline
 from phantom.features.pipelines.tools.phagcn import PhagcnFeaturePipeline
 from phantom.features.pipelines.tools.phavip import PhavipFeaturePipeline
-from phantom.features.pipelines.matrix import build_taxonomy_matrix
 from phantom.features.pipelines.utils import apply_mask, load_file
 
 MODEL_FACTORIES = {
@@ -44,14 +48,17 @@ VALIDATORS = {
 CHERRY_SEARCH_SPACE = {
     "binary": [True, False],
     "min_patients": list(range(1, 11)),
-    "feature_col": ['ncbi_phylum', 'ncbi_class', 'ncbi_order',
-                    'ncbi_family', 'ncbi_genus', 'ncbi_species']
+    "feature_col": [
+        "ncbi_phylum",
+        "ncbi_class",
+        "ncbi_order",
+        "ncbi_family",
+        "ncbi_genus",
+        "ncbi_species",
+    ],
 }
 
-PHAGCN_SEARCH_SPACE = {
-    "binary": [True, False],
-    "min_patients": list(range(1, 11))
-}
+PHAGCN_SEARCH_SPACE = {"binary": [True, False], "min_patients": list(range(1, 11))}
 
 CHERRY_DEFAULT_TRIALS = 120
 PHAGCN_DEFAULT_TRIALS = 20
@@ -90,7 +97,9 @@ def _select_raw_merged_file(tool: str, config_mgr: FeatureConfigManager | None =
     return selected
 
 
-def _load_preprocessed(tool: str, config_mgr: FeatureConfigManager | None = None) -> tuple[Path, pd.DataFrame]:
+def _load_preprocessed(
+    tool: str, config_mgr: FeatureConfigManager | None = None
+) -> tuple[Path, pd.DataFrame]:
     """
     Loads a tool's raw-merged file, applies the CheckV mask, then whatever
     preprocessing isn't itself part of the search space -- so every
@@ -116,37 +125,45 @@ def _load_preprocessed(tool: str, config_mgr: FeatureConfigManager | None = None
     raise ValueError(f"Unknown tool: {tool}")
 
 
-def run_study(study_name: str, objective_callable, n_trials: int,
-              model_name: str, validator_name: str, target_metric: str,
-              use_smote: bool, file_path: Path | None = None, sampler=None,
-              verbose: bool = True):
+def run_study(
+    study_name: str,
+    objective_callable,
+    n_trials: int,
+    model_name: str,
+    validator_name: str,
+    target_metric: str,
+    use_smote: bool,
+    file_path: Path | None = None,
+    sampler=None,
+    verbose: bool = True,
+):
     model = MODEL_FACTORIES[model_name](use_smote=use_smote)
     validator = VALIDATORS[validator_name](verbose=False)
     optimizer = FeatureExtractionOptimizer(
-        model=model,
-        validator=validator,
-        target_metric=target_metric
+        model=model, validator=validator, target_metric=target_metric
     )
 
     def wrapped_objective(trial):
         return objective_callable(trial, optimizer=optimizer)
+
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     study = optuna.create_study(study_name=study_name, direction="maximize", sampler=sampler)
     if verbose:
         print(f"\n[INFO] Starting Optuna optimization for {study_name.upper()}...")
-        print(f"[INFO] Pipeline: Model={model_name.upper()}, Validator={validator_name.upper()}, Target Metric={target_metric.upper()}, SMOTE={use_smote}")
+        print(
+            f"[INFO] Pipeline: Model={model_name.upper()}, Validator={validator_name.upper()}, Target Metric={target_metric.upper()}, SMOTE={use_smote}"
+        )
     study.optimize(wrapped_objective, n_trials=n_trials, show_progress_bar=verbose)
     if verbose:
         print_optimization_results(
-            study=study,
-            study_name=study_name,
-            target_metric=target_metric,
-            file_path=file_path
+            study=study, study_name=study_name, target_metric=target_metric, file_path=file_path
         )
     return study
 
 
-def print_optimization_results(study, study_name: str, target_metric: str, file_path: Path | None = None):
+def print_optimization_results(
+    study, study_name: str, target_metric: str, file_path: Path | None = None
+):
     print(f"\n=== {study_name.upper()} OPTIMIZATION FINISHED ===")
     if file_path is not None:
         print(f"Analyzed: {file_path.resolve()}")
@@ -166,27 +183,42 @@ def print_optimization_results(study, study_name: str, target_metric: str, file_
 
 
 def apply_phagcn_config(
-    df: pd.DataFrame, binary: bool, min_patients: int,
-    feature_columns: list[str] | None = None
+    df: pd.DataFrame, binary: bool, min_patients: int, feature_columns: list[str] | None = None
 ) -> pd.DataFrame:
     return build_taxonomy_matrix(
-        df, feature_col="genus", min_patients=min_patients, binary=binary,
-        feature_columns=feature_columns
+        df,
+        feature_col="genus",
+        min_patients=min_patients,
+        binary=binary,
+        feature_columns=feature_columns,
     )
 
 
-def phagcn_objective(trial, preprocessed_df: pd.DataFrame, optimizer: FeatureExtractionOptimizer,
-                      y_override=None) -> float:
+def phagcn_objective(
+    trial, preprocessed_df: pd.DataFrame, optimizer: FeatureExtractionOptimizer, y_override=None
+) -> float:
     binary_repr = trial.suggest_categorical("binary", [True, False])
     min_patients = trial.suggest_int("min_patients", 1, 10)
-    feature_matrix = apply_phagcn_config(preprocessed_df, binary=binary_repr, min_patients=min_patients)
+    feature_matrix = apply_phagcn_config(
+        preprocessed_df, binary=binary_repr, min_patients=min_patients
+    )
     return optimizer.run(feature_matrix, y_override=y_override)
 
 
-def search_phagcn(preprocessed_df: pd.DataFrame, model_name: str, validator_name: str,
-                   target_metric: str, use_smote: bool, n_trials: int | None = None,
-                   y_override=None, file_path: Path | None = None, verbose: bool = True) -> optuna.Study:
-    bound_objective = partial(phagcn_objective, preprocessed_df=preprocessed_df, y_override=y_override)
+def search_phagcn(
+    preprocessed_df: pd.DataFrame,
+    model_name: str,
+    validator_name: str,
+    target_metric: str,
+    use_smote: bool,
+    n_trials: int | None = None,
+    y_override=None,
+    file_path: Path | None = None,
+    verbose: bool = True,
+) -> optuna.Study:
+    bound_objective = partial(
+        phagcn_objective, preprocessed_df=preprocessed_df, y_override=y_override
+    )
     grid_sampler = optuna.samplers.GridSampler(PHAGCN_SEARCH_SPACE)
     return run_study(
         study_name="phagcn_feature_optimization",
@@ -203,33 +235,50 @@ def search_phagcn(preprocessed_df: pd.DataFrame, model_name: str, validator_name
 
 
 def apply_cherry_config(
-    df: pd.DataFrame, feature_col: str, binary: bool, min_patients: int,
-    feature_columns: list[str] | None = None
+    df: pd.DataFrame,
+    feature_col: str,
+    binary: bool,
+    min_patients: int,
+    feature_columns: list[str] | None = None,
 ) -> pd.DataFrame:
     return build_taxonomy_matrix(
-        df, feature_col=feature_col, min_patients=min_patients, binary=binary,
-        feature_columns=feature_columns
+        df,
+        feature_col=feature_col,
+        min_patients=min_patients,
+        binary=binary,
+        feature_columns=feature_columns,
     )
 
 
-def cherry_objective(trial, preprocessed_df: pd.DataFrame, optimizer: FeatureExtractionOptimizer,
-                      y_override=None) -> float:
+def cherry_objective(
+    trial, preprocessed_df: pd.DataFrame, optimizer: FeatureExtractionOptimizer, y_override=None
+) -> float:
     binary_repr = trial.suggest_categorical("binary", [True, False])
     min_patients = trial.suggest_int("min_patients", 1, 10)
-    feature_col = trial.suggest_categorical("feature_col", [
-        'ncbi_phylum', 'ncbi_class', 'ncbi_order',
-        'ncbi_family', 'ncbi_genus', 'ncbi_species'
-    ])
+    feature_col = trial.suggest_categorical(
+        "feature_col",
+        ["ncbi_phylum", "ncbi_class", "ncbi_order", "ncbi_family", "ncbi_genus", "ncbi_species"],
+    )
     feature_matrix = apply_cherry_config(
         preprocessed_df, feature_col=feature_col, binary=binary_repr, min_patients=min_patients
     )
     return optimizer.run(feature_matrix, y_override=y_override)
 
 
-def search_cherry(preprocessed_df: pd.DataFrame, model_name: str, validator_name: str,
-                   target_metric: str, use_smote: bool, n_trials: int | None = None,
-                   y_override=None, file_path: Path | None = None, verbose: bool = True) -> optuna.Study:
-    bound_objective = partial(cherry_objective, preprocessed_df=preprocessed_df, y_override=y_override)
+def search_cherry(
+    preprocessed_df: pd.DataFrame,
+    model_name: str,
+    validator_name: str,
+    target_metric: str,
+    use_smote: bool,
+    n_trials: int | None = None,
+    y_override=None,
+    file_path: Path | None = None,
+    verbose: bool = True,
+) -> optuna.Study:
+    bound_objective = partial(
+        cherry_objective, preprocessed_df=preprocessed_df, y_override=y_override
+    )
     grid_sampler = optuna.samplers.GridSampler(CHERRY_SEARCH_SPACE)
     return run_study(
         study_name="cherry_feature_optimization",
@@ -246,8 +295,10 @@ def search_cherry(preprocessed_df: pd.DataFrame, model_name: str, validator_name
 
 
 def apply_phavip_config(
-    df: pd.DataFrame, min_coverage: float, min_pident: float,
-    feature_columns: list[str] | None = None
+    df: pd.DataFrame,
+    min_coverage: float,
+    min_pident: float,
+    feature_columns: list[str] | None = None,
 ) -> pd.DataFrame:
     pipeline = PhavipFeaturePipeline(min_coverage=min_coverage, min_pident=min_pident)
     preprocessed_df = pipeline.preprocess(df)
@@ -256,8 +307,9 @@ def apply_phavip_config(
     return pipeline.build_feature_matrix(preprocessed_df, feature_columns=feature_columns)
 
 
-def phavip_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimizer,
-                      y_override=None) -> float:
+def phavip_objective(
+    trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimizer, y_override=None
+) -> float:
     min_coverage = trial.suggest_float("min_coverage", 0.5, 1.0)
     min_pident = trial.suggest_float("min_pident", 0.3, 1.0)
     feature_matrix = apply_phavip_config(df, min_coverage=min_coverage, min_pident=min_pident)
@@ -266,9 +318,17 @@ def phavip_objective(trial, df: pd.DataFrame, optimizer: FeatureExtractionOptimi
     return optimizer.run(feature_matrix, y_override=y_override)
 
 
-def search_phavip(df: pd.DataFrame, model_name: str, validator_name: str,
-                   target_metric: str, use_smote: bool, n_trials: int | None = None,
-                   y_override=None, file_path: Path | None = None, verbose: bool = True) -> optuna.Study:
+def search_phavip(
+    df: pd.DataFrame,
+    model_name: str,
+    validator_name: str,
+    target_metric: str,
+    use_smote: bool,
+    n_trials: int | None = None,
+    y_override=None,
+    file_path: Path | None = None,
+    verbose: bool = True,
+) -> optuna.Study:
     bound_objective = partial(phavip_objective, df=df, y_override=y_override)
     return run_study(
         study_name="phavip_feature_optimization",

@@ -1,12 +1,13 @@
 """
-Scans output files from geNomad, VIBRANT, and VirSorter2 to extract runtime 
+Scans output files from geNomad, VIBRANT, and VirSorter2 to extract runtime
 information.
 """
 
-import re
 import csv
-from pathlib import Path
+import re
 from datetime import datetime, timedelta
+from pathlib import Path
+
 import pandas as pd
 
 from phantom.config.loader import ConfigLoader
@@ -18,7 +19,8 @@ VIBRANT_RE = re.compile(r"Runtime:\s*([0-9.]+)\s*minutes")
 def get_sample_id(path):
     name = Path(path).name
     m = re.search(r"S\d+", name)
-    if m: return m.group(0)
+    if m:
+        return m.group(0)
     raise ValueError(f"Cannot extract sample_id from {name}")
 
 
@@ -31,7 +33,8 @@ def extract_first_time(file_path):
     with open(file_path) as f:
         for line in f:
             m = TIME_RE.search(line)
-            if m: return m.group(1)
+            if m:
+                return m.group(1)
     return None
 
 
@@ -40,7 +43,8 @@ def extract_last_time(file_path):
     with open(file_path) as f:
         for line in f:
             m = TIME_RE.search(line)
-            if m: last = m.group(1)
+            if m:
+                last = m.group(1)
     return last
 
 
@@ -79,26 +83,30 @@ def summarize_checkv(path, medium_comp=50, high_comp=75, max_cont=10):
 
 def build_index(root):
     root_path = Path(root)
-    if not root_path.exists() or not root_path.is_dir(): 
-        print(f"[WARNING] Tool directory not found: '{root_path}'. Skipping "
-              "runtimes for this path.")
+    if not root_path.exists() or not root_path.is_dir():
+        print(
+            f"[WARNING] Tool directory not found: '{root_path}'. Skipping runtimes for this path."
+        )
         return {}
     return {get_sample_id(f): f for f in root_path.iterdir() if f.is_dir()}
 
+
 def build_megahit_index(root):
     root_path = Path(root)
-    if not root_path.exists() or not root_path.is_dir(): 
-        print(f"[WARNING] MEGAHIT directory not found: '{root_path}'. "
-              "Skipping size metrics.")
+    if not root_path.exists() or not root_path.is_dir():
+        print(f"[WARNING] MEGAHIT directory not found: '{root_path}'. Skipping size metrics.")
         return {}
     return {get_sample_id(f): f for f in root_path.glob("*_assembly.contigs.fa")}
+
 
 def build_checkv_index(root):
     root_path = Path(root)
     index = {}
-    if not root_path.exists() or not root_path.is_dir(): 
-        print(f"[WARNING] CheckV directory not found: '{root_path}'. "
-              "Skipping quality control metrics for this tool.")
+    if not root_path.exists() or not root_path.is_dir():
+        print(
+            f"[WARNING] CheckV directory not found: '{root_path}'. "
+            "Skipping quality control metrics for this tool."
+        )
         return index
     for folder in root_path.iterdir():
         if folder.is_dir():
@@ -112,38 +120,49 @@ def runtime_vibrant(file_path: Path):
     with open(file_path) as f:
         for line in f:
             m = VIBRANT_RE.search(line)
-            if m: return round(float(m.group(1)))
+            if m:
+                return round(float(m.group(1)))
     return None
 
 
 def runtime_virsorter2(folder: Path):
     start_file = folder / "log" / "iter-0" / "step1-pp" / "circular-remove-partial-gene-common.log"
-    end_file = folder / "log" / "iter-0" / "step2-extract-feature" / "extract-feature-from-hmmout-common.log"
-    if not start_file.exists() or not end_file.exists(): return None
+    end_file = (
+        folder
+        / "log"
+        / "iter-0"
+        / "step2-extract-feature"
+        / "extract-feature-from-hmmout-common.log"
+    )
+    if not start_file.exists() or not end_file.exists():
+        return None
     start_time = get_virsorter2_log_time(start_file)
     end_time = get_virsorter2_log_time(end_file)
-    if end_time < start_time: end_time += timedelta(days=1)
+    if end_time < start_time:
+        end_time += timedelta(days=1)
     return round((end_time - start_time).total_seconds() / 60)
 
 
 def runtime_genomad(folder):
     start_files = list(folder.glob("*contigs_annotate.log"))
     end_files = list(folder.glob("*contigs_summary.log"))
-    if not start_files or not end_files: return None
+    if not start_files or not end_files:
+        return None
     start = datetime.strptime(extract_first_time(start_files[0]), "%H:%M:%S")
     end = datetime.strptime(extract_last_time(end_files[0]), "%H:%M:%S")
-    if end < start: end += timedelta(days=1)
+    if end < start:
+        end += timedelta(days=1)
     return round((end - start).total_seconds() / 60)
 
 
 def scan_metadata(config: dict) -> pd.DataFrame:
     """
-    Scans predefined roots for metadata and formats it as a DataFrame 
+    Scans predefined roots for metadata and formats it as a DataFrame
     joined on id.
-    
-    NOTE: Log parsing for runtimes are strictly hardcoded for the utilized 
-    versions of geNomad, VIBRANT and VirSorter2. Custom tools added to the 
-    config are ignored during this step due to the specific nature of various 
+
+    NOTE: Log parsing for runtimes are strictly hardcoded for the utilized
+    versions of geNomad, VIBRANT and VirSorter2. Custom tools added to the
+    config are ignored during this step due to the specific nature of various
     outputs.
     """
     resolve = ConfigLoader.resolve_data_path
@@ -157,7 +176,7 @@ def scan_metadata(config: dict) -> pd.DataFrame:
     vs2_root = build_index(vs2_path)
     gen_root = build_index(gen_path)
     megahit_root = build_megahit_index(megahit_path)
-    
+
     checkv_vib = build_checkv_index(checkv_base / "vibrant")
     checkv_vs2 = build_checkv_index(checkv_base / "virsorter2")
     checkv_gen = build_checkv_index(checkv_base / "genomad")
@@ -167,7 +186,10 @@ def scan_metadata(config: dict) -> pd.DataFrame:
 
     for sid, folder in vib_root.items():
         logs = list(folder.rglob("VIBRANT_log_run_*_assembly.contigs.log"))
-        if logs: results[sid]["vib_runtime"] = runtime_vibrant(max(logs, key=lambda f: f.stat().st_mtime))
+        if logs:
+            results[sid]["vib_runtime"] = runtime_vibrant(
+                max(logs, key=lambda f: f.stat().st_mtime)
+            )
     for sid, folder in vs2_root.items():
         results[sid]["vs2_runtime"] = runtime_virsorter2(folder)
     for sid, folder in gen_root.items():

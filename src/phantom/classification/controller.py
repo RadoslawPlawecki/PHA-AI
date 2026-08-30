@@ -5,13 +5,13 @@ and unsupervised (MDS) exploration.
 
 from pathlib import Path
 
-from phantom.config.loader import ConfigLoader
-from phantom.config.features import FeatureConfigManager
-from phantom.cli.classification import ClassificationPrompts
-from phantom.classification.data.config import SingleOmicConfig, MultiOmicConfig, MdsConfig
-from phantom.classification.execution.single_omic import SingleOmicClassifier
+from phantom.classification.data.config import MdsConfig, MultiOmicConfig, SingleOmicConfig
 from phantom.classification.execution.multi_omic import MultiOmicClassifier
+from phantom.classification.execution.single_omic import SingleOmicClassifier
 from phantom.classification.execution.unsupervised_classifier import UnsupervisedClassifier
+from phantom.cli.classification import ClassificationPrompts
+from phantom.config.features import FeatureConfigManager
+from phantom.config.loader import ConfigLoader
 
 
 class ClassificationController:
@@ -53,13 +53,17 @@ class ClassificationController:
         if scope == "All virus-identification tools x all omics":
             for omic in self.omics:
                 for vtool in self.vtools:
-                    in_file = ClassificationPrompts.ask_omic_file(self.config_mgr, version, omic, self.omics, vtool=vtool)
+                    in_file = ClassificationPrompts.ask_omic_file(
+                        self.config_mgr, version, omic, self.omics, vtool=vtool
+                    )
                     if in_file:
                         runs.append((in_file, omic, vtool))
         else:
             omic = ClassificationPrompts.ask_omic_choice(self.omics)
             for vtool in self._vtools_for_scope(scope):
-                in_file = ClassificationPrompts.ask_omic_file(self.config_mgr, version, omic, self.omics, vtool=vtool)
+                in_file = ClassificationPrompts.ask_omic_file(
+                    self.config_mgr, version, omic, self.omics, vtool=vtool
+                )
                 if in_file:
                     runs.append((in_file, omic, vtool))
 
@@ -91,16 +95,29 @@ class ClassificationController:
         out_dir = ClassificationPrompts.ask_classification_out_dir("multi", version)
 
         for vtool in self._vtools_for_scope(scope):
-            comp = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "comp", self.omics, vtool=vtool)
-            host = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "host", self.omics, vtool=vtool)
-            func = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "func", self.omics, vtool=vtool)
+            comp = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "comp", self.omics, vtool=vtool
+            )
+            host = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "host", self.omics, vtool=vtool
+            )
+            func = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "func", self.omics, vtool=vtool
+            )
             if not (comp and host and func):
                 continue
             config = MultiOmicConfig(
-                comp=str(comp), host=str(host), func=str(func),
-                out_dir=str(out_dir), run_loocv=run_loocv, run_repeated=run_repeated,
-                use_smote=use_smote, model_type=model_type, fusion=fusion,
-                opt=opt, n_trials=n_trials,
+                comp=str(comp),
+                host=str(host),
+                func=str(func),
+                out_dir=str(out_dir),
+                run_loocv=run_loocv,
+                run_repeated=run_repeated,
+                use_smote=use_smote,
+                model_type=model_type,
+                fusion=fusion,
+                opt=opt,
+                n_trials=n_trials,
             )
             MultiOmicClassifier(config).run()
 
@@ -112,9 +129,15 @@ class ClassificationController:
         out_dir = ClassificationPrompts.ask_classification_out_dir("unsupervised", version)
 
         for vtool in self._vtools_for_scope(scope):
-            comp = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "comp", self.omics, vtool=vtool)
-            host = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "host", self.omics, vtool=vtool)
-            func = ClassificationPrompts.ask_omic_file(self.config_mgr, version, "func", self.omics, vtool=vtool)
+            comp = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "comp", self.omics, vtool=vtool
+            )
+            host = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "host", self.omics, vtool=vtool
+            )
+            func = ClassificationPrompts.ask_omic_file(
+                self.config_mgr, version, "func", self.omics, vtool=vtool
+            )
             if not (comp and host and func):
                 continue
             config = MdsConfig(comp=str(comp), host=str(host), func=str(func), out_dir=str(out_dir))

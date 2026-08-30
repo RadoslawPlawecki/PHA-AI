@@ -4,6 +4,7 @@
 
 import logging
 import os
+
 from tqdm import tqdm
 
 
@@ -15,8 +16,7 @@ class Logger:
         logger.setLevel(logging.INFO)
         logger.handlers.clear()
         formatter = logging.Formatter(
-            "[%(asctime)s] [%(levelname)s] %(message)s",
-            "%Y-%m-%d %H:%M:%S"
+            "[%(asctime)s] [%(levelname)s] %(message)s", "%Y-%m-%d %H:%M:%S"
         )
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
@@ -28,6 +28,5 @@ class Logger:
         return logger
 
     def log_tqdm(logger, msg):
-        tqdm.write(msg)   
+        tqdm.write(msg)
         logger.info(msg)
-    

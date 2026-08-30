@@ -3,16 +3,18 @@ Shared IO helpers used when loading and masking raw-merged feature data
 before it is handed to a per-tool pipeline.
 """
 
-import pandas as pd
-from typing import Optional
 from pathlib import Path
+
+import pandas as pd
 
 
 def format_accession(prefix: str, column: pd.Series) -> pd.Series:
-        return prefix + "|" + column.str.replace(r'k_', 'k', regex=False)
+    return prefix + "|" + column.str.replace(r"k_", "k", regex=False)
 
 
-def split_taxonomy(df: pd.DataFrame, col: str = "lineage", rename: bool = True, lineage_type: Optional[str] = None):
+def split_taxonomy(
+    df: pd.DataFrame, col: str = "lineage", rename: bool = True, lineage_type: str | None = None
+):
     if lineage_type:
         rename_map = {
             "d": f"{lineage_type}_domain",
@@ -21,21 +23,23 @@ def split_taxonomy(df: pd.DataFrame, col: str = "lineage", rename: bool = True, 
             "o": f"{lineage_type}_order",
             "f": f"{lineage_type}_family",
             "g": f"{lineage_type}_genus",
-            "s": f"{lineage_type}_species"
+            "s": f"{lineage_type}_species",
         }
     else:
         rename_map = {
-        "d": "domain",
-        "p": "phylum",
-        "c": "class",
-        "o": "order",
-        "f": "family",
-        "g": "genus",
-        "s": "species"
-    }
-    expanded = df[col].apply(
-        lambda x: dict(item.split("__", 1) for item in x.split(";") if "__" in item)
-    ).apply(pd.Series)
+            "d": "domain",
+            "p": "phylum",
+            "c": "class",
+            "o": "order",
+            "f": "family",
+            "g": "genus",
+            "s": "species",
+        }
+    expanded = (
+        df[col]
+        .apply(lambda x: dict(item.split("__", 1) for item in x.split(";") if "__" in item))
+        .apply(pd.Series)
+    )
     if rename:
         expanded = expanded.rename(columns=rename_map)
     return pd.concat([df, expanded], axis=1)
@@ -49,17 +53,8 @@ def apply_mask(df: pd.DataFrame, mask_path: Path) -> pd.DataFrame:
     if "contig_id" not in mask_df.columns:
         raise ValueError("Mask file must contain a 'contig_id' column.")
     original_count = len(df)
-    mask_contigs = (
-        mask_df["contig_id"]
-        .str.split(":", n=1)
-        .str[0]
-        .unique()
-    )
-    df_contigs = (
-        df["Accession"]
-        .str.split(":", n=1)
-        .str[0]
-    )
+    mask_contigs = mask_df["contig_id"].str.split(":", n=1).str[0].unique()
+    df_contigs = df["Accession"].str.split(":", n=1).str[0]
     df = df[df_contigs.isin(mask_contigs)]
     print(
         f"[INFO] Mask applied: {mask_path.name}\n"

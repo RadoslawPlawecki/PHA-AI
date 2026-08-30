@@ -1,11 +1,13 @@
 """
-Handles merging raw per-sample feature files (TSV) into combined dataset 
+Handles merging raw per-sample feature files (TSV) into combined dataset
 files.
 """
 
 import os
 from pathlib import Path
+
 import pandas as pd
+
 from phantom.cli.features import FeatureCollectionPrompts
 from phantom.config.features import FeatureConfigManager
 
@@ -47,9 +49,7 @@ class FeatureConcatenator:
         return sorted(leaf_dirs)
 
     def _process_leaf_directory(self, leaf_dir: Path) -> None:
-        raw_files = sorted(
-            list(leaf_dir.glob("*.tsv")) + list(leaf_dir.glob("*.csv"))
-        )
+        raw_files = sorted(list(leaf_dir.glob("*.tsv")) + list(leaf_dir.glob("*.csv")))
         if not raw_files:
             return
         rel_dir = leaf_dir.relative_to(self.raw_dir)

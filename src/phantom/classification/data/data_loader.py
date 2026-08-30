@@ -2,11 +2,12 @@
 @author: Radosław Pławecki
 """
 
-import pandas as pd
-import numpy as np
 import csv
 from collections import Counter
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 from phantom.classification.data.labeling import Labeling
 
@@ -27,9 +28,9 @@ class DataLoader:
         except (csv.Error, OSError):
             sep = ";"
         df = pd.read_csv(self.input_path, sep=sep)
-        sample_ids = df['id'].copy()
+        sample_ids = df["id"].copy()
         y = Labeling.derive_label(sample_ids)
-        X = df.drop(columns=['id', 'label'], errors="ignore")
+        X = df.drop(columns=["id", "label"], errors="ignore")
         X = X.apply(pd.to_numeric, errors="coerce")
         self._log_load(X=X, y=y)
         return X, y, sample_ids
@@ -60,4 +61,3 @@ class DataLoader:
             print(msg3)
             print(msg4)
             print(msg5)
-            

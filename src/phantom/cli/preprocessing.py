@@ -14,28 +14,28 @@ class PreprocessingPrompts:
                 "1) Collect putative viral genomes",
                 "2) Gather metadata",
                 "3) Generate CheckV masks",
-                "Back"
-            ]
+                "Back",
+            ],
         ).ask()
 
     @staticmethod
     def ask_metadata_targets() -> list:
         return questionary.checkbox(
-            "Select metadata to append/gather (Space to select, Enter to "
-            "confirm):",
+            "Select metadata to append/gather (Space to select, Enter to confirm):",
             choices=[
                 "1) Renaming (format file paths)",
                 "2) Labeling (assign labels to samples)",
                 "3) Runtimes",
                 "4) CheckV stats",
-                "5) Input file sizes"
-            ]
+                "5) Input file sizes",
+            ],
         ).ask()
 
     @staticmethod
     def ask_auto_format(invalid_count: int) -> bool:
-        return questionary.confirm(f"Found {invalid_count} improperly named "
-                                   "folders. Auto-format them?").ask()
+        return questionary.confirm(
+            f"Found {invalid_count} improperly named folders. Auto-format them?"
+        ).ask()
 
     @staticmethod
     def ask_strategy(num_files: int) -> str:
@@ -52,17 +52,15 @@ class PreprocessingPrompts:
     @staticmethod
     def ask_interactive(choices: list) -> list:
         return questionary.checkbox(
-            "Select files to label as POSITIVE (Space to select, "
-            "Enter to confirm):",
-            choices=choices
+            "Select files to label as POSITIVE (Space to select, Enter to confirm):",
+            choices=choices,
         ).ask()
 
     @staticmethod
     def ask_threshold() -> int:
         answer = questionary.text(
             "Enter threshold sample number (S_cutoff):",
-            validate=lambda text: text.isdigit() 
-                     or "Please enter a valid integer."
+            validate=lambda text: text.isdigit() or "Please enter a valid integer.",
         ).ask()
         return int(answer)
 
@@ -73,4 +71,3 @@ class PreprocessingPrompts:
     @staticmethod
     def ask_external_csv() -> str:
         return questionary.text("Path to external CSV file:").ask()
-    

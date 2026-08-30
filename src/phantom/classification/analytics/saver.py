@@ -2,12 +2,11 @@
 @author: Radosław Pławecki
 """
 
-import csv
-import os
 import json
-import pandas as pd
+import os
+
 import numpy as np
-from datetime import datetime
+import pandas as pd
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -18,7 +17,7 @@ class NumpyEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        return super(NumpyEncoder, self).default(obj)
+        return super().default(obj)
 
 
 class ExperimentSaver:
@@ -49,33 +48,44 @@ class ExperimentSaver:
             with open(cm_path, "w") as f:
                 json.dump(cm, f, indent=4, cls=NumpyEncoder)
 
-    def save_feature_importance(self, importances: np.ndarray, feature_names: list, X: np.ndarray, y: np.ndarray, subfolder=""):
+    def save_feature_importance(
+        self,
+        importances: np.ndarray,
+        feature_names: list,
+        X: np.ndarray,
+        y: np.ndarray,
+        subfolder="",
+    ):
         target_dir = self._get_target_dir(subfolder)
         path = os.path.join(target_dir, "feature_importance.csv")
         mean_0 = [np.mean(X[y == 0, i]) for i in range(X.shape[1])]
         mean_1 = [np.mean(X[y == 1, i]) for i in range(X.shape[1])]
-        df = pd.DataFrame({
-            "feature": feature_names,
-            "importance": importances,
-            "mean_class_0": mean_0,
-            "mean_class_1": mean_1
-        }).sort_values(by="importance", ascending=False)
+        df = pd.DataFrame(
+            {
+                "feature": feature_names,
+                "importance": importances,
+                "mean_class_0": mean_0,
+                "mean_class_1": mean_1,
+            }
+        ).sort_values(by="importance", ascending=False)
         df.to_csv(path, index=False)
 
-    def save_predictions(self, y_true, y_pred, y_prob, sample_ids=None, folds=None, repeats=None, subfolder=""):
+    def save_predictions(
+        self, y_true, y_pred, y_prob, sample_ids=None, folds=None, repeats=None, subfolder=""
+    ):
         target_dir = self._get_target_dir(subfolder)
         path = os.path.join(target_dir, "predictions.csv")
         data = {
             "y_true": y_true,
             "y_pred": y_pred,
             "y_prob_0": 1.0 - np.array(y_prob),
-            "y_prob_1": y_prob
+            "y_prob_1": y_prob,
         }
-        if sample_ids is not None: 
+        if sample_ids is not None:
             data["sample_id"] = sample_ids
-        if folds is not None: 
+        if folds is not None:
             data["fold"] = folds
-        if repeats is not None: 
+        if repeats is not None:
             data["repeat"] = repeats
         df = pd.DataFrame(data)
         df.to_csv(path, index=False)
@@ -88,9 +98,9 @@ class ExperimentSaver:
             flattened_data[modality] = {
                 "silhouette_score": metrics.get("silhouette", {}).get("score", np.nan),
                 "permanova_F": metrics.get("permanova", {}).get("statistic", np.nan),
-                "permanova_p": metrics.get("permanova", {}).get("p_value", np.nan)
+                "permanova_p": metrics.get("permanova", {}).get("p_value", np.nan),
             }
-        df = pd.DataFrame(flattened_data).T 
+        df = pd.DataFrame(flattened_data).T
         df.index = df.index.str.capitalize()
         df.index.name = "Modality"
         df.to_csv(path)
