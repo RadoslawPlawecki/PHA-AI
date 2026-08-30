@@ -25,5 +25,31 @@ dependencies = [
     "xgboost>=3.3.0"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.16",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = [
+    "src/phantom/other",          # pre-refactor, not wired into any controller
+    "src/phantom/visualization",  # pre-refactor, pending port-vs-delete triage
+    "tests",                      # pre-refactor flat layout; fail at collection, rewrite pending
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",    # line length is owned by `ruff format`; don't also lint it in strings/comments
+    "B008",    # function call in argument default (questionary idiom)
+    "SIM108",  # ternary-instead-of-if — hurts readability as often as it helps
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["phantom"]
