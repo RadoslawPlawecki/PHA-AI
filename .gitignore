@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 *.pyd
 src/phantom.egg-info
+.ruff_cache/
 CLAUDE.md
 catboost_info
 .claude
