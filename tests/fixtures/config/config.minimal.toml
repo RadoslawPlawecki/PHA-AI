@@ -1,0 +1,75 @@
+# Minimal but schema-valid config.toml for tests that construct
+# ConfigLoader / FeatureConfigManager. Mirrors the real config.toml's shape
+# with one pre-existing feature version (9.9) carrying all four stage
+# sub-tables. Tests that exercise create_new_version() should use a
+# different version number so it does not collide with 9.9.
+
+[tools]
+geN = "genomad"
+VIB = "vibrant"
+VS2 = "virsorter2"
+
+[omics]
+comp = { tool = "phagcn", tag = "PGN", label = "Composition" }
+host = { tool = "cherry", tag = "CHR", label = "Host prediction" }
+func = { tool = "phavip", tag = "PHV", label = "Functional" }
+
+[megahit]
+path = "data/megahit"
+type = "directory"
+
+[genomad]
+path = "data/genomad"
+type = "directory"
+viral_fna = "*_virus.fna"
+
+[vibrant]
+path = "data/vibrant"
+type = "directory"
+viral_fna = "*.phages_combined.fna"
+
+[virsorter2]
+path = "data/virsorter2"
+type = "directory"
+viral_fna = "final-viral-combined.fa"
+
+[genomes]
+path = "data/genomes"
+type = "directory"
+
+[checkv]
+path = "data/checkv"
+type = "directory"
+
+[masks]
+path = "data/masks"
+type = "directory"
+
+[features]
+path = "data/features"
+type = "directory"
+
+[features.v9_9]
+path = "data/features/9.9"
+version = "9.9"
+type = "directory"
+
+[features.v9_9.raw]
+path = "raw"
+type = "directory"
+description = "Raw feature files stored separately for each sample before merging."
+
+[features.v9_9.raw_merged]
+path = "raw-merged"
+type = "directory"
+description = "Merged raw feature data combined into unified files."
+
+[features.v9_9.preprocessed]
+path = "preprocessed"
+type = "directory"
+description = "Preprocessed feature data."
+
+[features.v9_9.extracted]
+path = "extracted"
+type = "directory"
+description = "Extracted feature representations used as classifier input."

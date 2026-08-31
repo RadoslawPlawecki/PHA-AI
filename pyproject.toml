@@ -28,10 +28,50 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff>=0.16",
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pytest-xdist>=3",
+    "pytest-randomly>=3.15",
+    "freezegun>=1.5",
+    "hypothesis>=6.100",
+    "coverage[toml]>=7.5",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+pythonpath = ["."]
+norecursedirs = ["fixtures", "_helpers"]
+markers = [
+    "slow: real catboost/xgb/PERMANOVA or large Optuna budgets (nightly only)",
+    "ml: exercises classification/ml on a real estimator",
+    "property: hypothesis-based",
+    "integration: touches the filesystem / multi-component",
+    "controller: drives a *Controller with mocked prompts",
+    "critical: covers a business-critical path (see tests/README.md)",
+    "flaky: known non-deterministic, quarantined (non-blocking job)",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/phantom"]
+omit = [
+    "src/phantom/other/*",
+    "src/phantom/visualization/*",
+    "*/__main__.py",
+    "src/phantom/main.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "def from_args",
+]
 
 [tool.ruff]
 target-version = "py311"
@@ -40,7 +80,6 @@ src = ["src", "tests"]
 extend-exclude = [
     "src/phantom/other",          # pre-refactor, not wired into any controller
     "src/phantom/visualization",  # pre-refactor, pending port-vs-delete triage
-    "tests",                      # pre-refactor flat layout; fail at collection, rewrite pending
 ]
 
 [tool.ruff.lint]
@@ -49,6 +88,12 @@ ignore = [
     "E501",    # line length is owned by `ruff format`; don't also lint it in strings/comments
     "B008",    # function call in argument default (questionary idiom)
     "SIM108",  # ternary-instead-of-if — hurts readability as often as it helps
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # asserts are the point in tests
+    "PLR2004", # magic values are fine in test data/assertions
 ]
 
 [tool.ruff.lint.isort]
