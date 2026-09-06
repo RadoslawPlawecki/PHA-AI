@@ -52,25 +52,29 @@ def get_virsorter2_log_time(log_file):
     return datetime.strptime(start_str, "%Y-%m-%d %H:%M")
 
 
-def summarize_checkv(path, min_comp=50, max_cont=10):
-    total = good = 0
+def summarize_checkv(path, medium_comp=50, high_comp=75, max_cont=10):
+    total = medium = high = 0
     with open(path) as f:
         reader = csv.DictReader(f, delimiter="\t")
         fields = {k.lower(): k for k in reader.fieldnames}
         comp_key = fields.get("completeness") or fields.get("estimated_completeness")
         cont_key = fields.get("contamination") or fields.get("estimated_contamination")
         if not comp_key or not cont_key:
-            return None, None
+            return None, None, None
         for row in reader:
             try:
                 comp = float(row[comp_key])
                 cont = float(row[cont_key])
-                total += 1
-                if comp >= min_comp and cont < max_cont:
-                    good += 1
             except (ValueError, TypeError):
                 continue
-    return total, good
+            total += 1
+            if cont >= max_cont:
+                continue
+            if comp >= medium_comp:
+                medium += 1
+            if comp >= high_comp:
+                high += 1
+    return total, medium, high
 
 
 def build_index(root):
@@ -174,22 +178,12 @@ def scan_metadata(config: dict) -> pd.DataFrame:
         results[sid]["megahit_size_bytes"] = b
         results[sid]["megahit_size_mb"] = mb
 
-    for sid, path in checkv_vib.items():
-        t, g = summarize_checkv(path)
-        if t is not None:
-            results[sid]["checkv_vib_total"] = t
-            results[sid]["checkv_vib_good"] = g
-            
-    for sid, path in checkv_vs2.items():
-        t, g = summarize_checkv(path)
-        if t is not None:
-            results[sid]["checkv_vs2_total"] = t
-            results[sid]["checkv_vs2_good"] = g
-            
-    for sid, path in checkv_gen.items():
-        t, g = summarize_checkv(path)
-        if t is not None:
-            results[sid]["checkv_gen_total"] = t
-            results[sid]["checkv_gen_good"] = g
+    for tag, index in (("vib", checkv_vib), ("vs2", checkv_vs2), ("gen", checkv_gen)):
+        for sid, path in index.items():
+            t, m, h = summarize_checkv(path)
+            if t is not None:
+                results[sid][f"checkv_{tag}_total"] = t
+                results[sid][f"checkv_{tag}_medium"] = m
+                results[sid][f"checkv_{tag}_high"] = h
 
     return pd.DataFrame(list(results.values()))
