@@ -115,9 +115,9 @@ class PreprocessingController:
             if not df_scan.empty:
                 scan_mappings = {
                     "3)": ["vib_runtime", "vs2_runtime", "gen_runtime"],
-                    "4)": ["checkv_vib_total", "checkv_vib_good", 
-                           "checkv_vs2_total", "checkv_vs2_good", 
-                           "checkv_gen_total", "checkv_gen_good"],
+                    "4)": ["checkv_vib_total", "checkv_vib_medium", "checkv_vib_high",
+                           "checkv_vs2_total", "checkv_vs2_medium", "checkv_vs2_high",
+                           "checkv_gen_total", "checkv_gen_medium", "checkv_gen_high"],
                     "5)": ["megahit_size_bytes", "megahit_size_mb"]
                 }
                 for prefix, cols in scan_mappings.items():
