@@ -15,12 +15,13 @@ def build_matrix(
 ) -> pd.DataFrame:
         df["id"] = derive_patient_id(df["Accession"])
         matrix = pd.crosstab(df["id"], df[feature_col])
+        presence = (matrix > 0).astype(int)
         if binary:
-            matrix = (matrix > 0).astype(int)
+            matrix = presence
         if feature_columns is not None:
             matrix = matrix.reindex(columns=feature_columns, fill_value=0)
         else:
-            vc_mask = matrix.sum(axis=0) >= min_patients
+            vc_mask = presence.sum(axis=0) >= min_patients
             matrix = matrix.loc[:, vc_mask]
         matrix.columns.name = None
         return matrix.reset_index()
