@@ -1,10 +1,12 @@
 import sys
 
-import questionary
+sys.dont_write_bytecode = True
 
-from phantom.classification.controller import ClassificationController
-from phantom.features.controller import FeatureController
-from phantom.preprocessing.controller import PreprocessingController
+import questionary  # noqa: E402
+
+from phantom.classification.controller import ClassificationController  # noqa: E402
+from phantom.features.controller import FeatureController  # noqa: E402
+from phantom.preprocessing.controller import PreprocessingController  # noqa: E402
 
 
 def main():
