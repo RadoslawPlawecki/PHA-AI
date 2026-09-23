@@ -24,6 +24,11 @@ jobs:
         run: ruff format --check .
       - name: mypy
         run: mypy src/phantom
+      - name: pre-commit hygiene hooks
+        run: |
+          pre-commit run trailing-whitespace --all-files --hook-stage pre-push
+          pre-commit run check-merge-conflict --all-files --hook-stage pre-push
+          pre-commit run check-added-large-files --all-files --hook-stage pre-push
 
   test:
     runs-on: ubuntu-latest

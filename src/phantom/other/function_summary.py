@@ -6,9 +6,9 @@ from difflib import get_close_matches
 import os
 import re
 import csv
-               
-in_root = "data/phanotate/orfs"         
-out_root = "data/functions"                 
+
+in_root = "data/phanotate/orfs"
+out_root = "data/functions"
 
 tool_tag = {
     "genomad": "geN",
@@ -22,9 +22,9 @@ def normalize_accession(acc: str) -> str:
 
 
 def load_metadata(prefix):
-    func = f"data/modalities/1.0/preprocessed/phavip/{prefix}_ChV_PHA_ORFs_PHV_M_PP.csv"   
-    comp = f"data/modalities/1.0/preprocessed/phagcn/{prefix}_ChV_PGN_M_PP.csv"              
-    host = f"data/modalities/1.0/preprocessed/cherry/{prefix}_ChV_CHR_M_PP.csv"  
+    func = f"data/modalities/1.0/preprocessed/phavip/{prefix}_ChV_PHA_ORFs_PHV_M_PP.csv"
+    comp = f"data/modalities/1.0/preprocessed/phagcn/{prefix}_ChV_PGN_M_PP.csv"
+    host = f"data/modalities/1.0/preprocessed/cherry/{prefix}_ChV_CHR_M_PP.csv"
     annotations = {}
     genus_dict = {}
     host_dict = {}
@@ -84,8 +84,8 @@ def process_fasta():
                 for line in f:
                     line = line.strip()
                     if line.startswith(">"):
-                        save_current_sequence() 
-                        current_header = line[1:] 
+                        save_current_sequence()
+                        current_header = line[1:]
                         current_seq = []
                     else:
                         current_seq.append(line)
@@ -109,4 +109,3 @@ if __name__ == "__main__":
     process_fasta()
     print(f"Exported to: {out_root}")
 
-    

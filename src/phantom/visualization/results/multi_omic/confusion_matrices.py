@@ -49,7 +49,7 @@ def generate_confusion_matrix_grid(base_dir, validation_mode, model):
                                 xticklabels=['0', '1'],
                                 yticklabels=['0', '1'],
                                 square=True, linewidths=1.5, linecolor='#979797')
-                    ax.tick_params(axis='x', labelsize=16, labelrotation=0) 
+                    ax.tick_params(axis='x', labelsize=16, labelrotation=0)
                     ax.tick_params(axis='y', labelsize=16)
                     if c_idx == 0:
                         ax.set_ylabel(rows_map[r], fontsize=18, fontweight='bold', labelpad=15)
@@ -82,4 +82,3 @@ if __name__ == "__main__":
     results_path = f"data/results/multi_omic/{model}"
     generate_confusion_matrix_grid(results_path, "loocv", model=model)
     generate_confusion_matrix_grid(results_path, "rcv", model=model)
-    

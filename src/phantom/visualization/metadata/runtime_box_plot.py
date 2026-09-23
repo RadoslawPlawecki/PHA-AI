@@ -30,12 +30,12 @@ palette = {
 }
 
 ax = sns.boxplot(
-    x='Tool', 
-    y='Runtime [min]', 
+    x='Tool',
+    y='Runtime [min]',
     data=df_melted,
-    hue='Tool',  
+    hue='Tool',
     palette=palette,
-    legend=False,   
+    legend=False,
     width=0.5,
     linewidth=1.2,
     flierprops={"marker": "x"}
@@ -46,7 +46,7 @@ plt.xlabel('Tool', fontsize=14, labelpad=10)
 plt.ylabel('Runtime [min]', fontsize=14, labelpad=10)
 
 plt.tight_layout()
-plt.savefig('plots/metadata/runtime_box_plot.pdf') 
+plt.savefig('plots/metadata/runtime_box_plot.pdf')
 plt.show()
 
 print(sns.color_palette("Set2").as_hex())

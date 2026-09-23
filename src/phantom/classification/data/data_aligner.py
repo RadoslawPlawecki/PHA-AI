@@ -29,9 +29,8 @@ class DataAligner:
             modality_labels = np.array([raw_labels[idx] for idx in aligned_indices])
             if y_aligned is None:
                 y_aligned = modality_labels
-            else:
-                assert np.array_equal(y_aligned, modality_labels), (
-                    f"Labels are not consistent for modality: {m}"
-                )
-        assert y_aligned is not None, "X_raw must contain at least one modality"
+            elif not np.array_equal(y_aligned, modality_labels):
+                raise ValueError(f"Labels are not consistent for modality: {m}")
+        if y_aligned is None:
+            raise ValueError("X_raw must contain at least one modality")
         return X_aligned, y_aligned, common_samples

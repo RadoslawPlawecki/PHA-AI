@@ -4,7 +4,7 @@ for tool_path in data/genomes/*/; do
     tool=$(basename "$tool_path")
 
     mkdir -p \
-        data/phabox2/cherry/${tool} 
+        data/phabox2/cherry/${tool}
 
     for file in "${tool_path}"*.fna; do
         filename=$(basename "$file")

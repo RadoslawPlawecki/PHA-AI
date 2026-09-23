@@ -10,7 +10,7 @@ def use_latex():
     """
     Function to use LaTeX formatting for plots.
     """
-    sns.set_style('whitegrid')   
+    sns.set_style('whitegrid')
 
     plt.rcParams.update({
         "text.usetex": True,

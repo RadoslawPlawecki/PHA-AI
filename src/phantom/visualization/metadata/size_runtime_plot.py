@@ -10,8 +10,8 @@ import numpy as np
 
 use_latex()
 
-df = pd.read_csv("metadata.csv", delimiter=';', usecols=['sample_id', 'megahit_size_bytes', 
-                                                         'vib_runtime', 'vs2_runtime', 
+df = pd.read_csv("metadata.csv", delimiter=';', usecols=['sample_id', 'megahit_size_bytes',
+                                                         'vib_runtime', 'vs2_runtime',
                                                          'gen_runtime'])
 
 df_sorted = df.sort_values('megahit_size_bytes').reset_index(drop=True)
@@ -41,7 +41,7 @@ ax = sns.scatterplot(
     y='Runtime',
     hue='Tool',
     size='Size',
-    sizes=(20, 500), 
+    sizes=(20, 500),
     alpha=0.6,
     palette=palette,
     edgecolor='w',

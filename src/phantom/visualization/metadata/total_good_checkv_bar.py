@@ -10,7 +10,7 @@ import numpy as np
 
 use_latex()
 
-df = pd.read_csv("metadata.csv", delimiter=';', usecols=['sample_id', 'checkv_vib_total', 'checkv_vib_good', 
+df = pd.read_csv("metadata.csv", delimiter=';', usecols=['sample_id', 'checkv_vib_total', 'checkv_vib_good',
                                                          'checkv_vs2_total', 'checkv_vs2_good',
                                                          'checkv_gen_total', 'checkv_gen_good'])
 
@@ -52,7 +52,7 @@ for i, sample_group in enumerate(groups):
         palette=palette_light,
         ax=ax, alpha=1.0
     )
-    
+
     sns.barplot(
         data=subset, x='Sample', y='Good', hue='Method',
         palette=palette_main,
@@ -79,5 +79,5 @@ custom_lines = [
 axes[0].legend(handles=custom_lines, loc='upper right', fontsize=10, frameon=True)
 
 plt.tight_layout(rect=[0, 0.03, 1, 0.97])
-plt.savefig('plots/metadata/total_good_checkv_bar.pdf') 
+plt.savefig('plots/metadata/total_good_checkv_bar.pdf')
 plt.show()

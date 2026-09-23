@@ -14,8 +14,8 @@ def compile_single_omic_metrics_to_csv(base_dir, output_csv, model):
     omics_map = {'comp': 'Comp', 'host': 'Host', 'func': 'Func'}
     modes = ['loocv', 'rcv']
     metric_keys = [
-        "roc_auc", "specificity", "sensitivity", "bacc", 
-        "precision", "recall", "f1", "gmean", "npv", "mcc", 
+        "roc_auc", "specificity", "sensitivity", "bacc",
+        "precision", "recall", "f1", "gmean", "npv", "mcc",
     ]
     data_dict = {
         "Metric": [key for key in metric_keys]
@@ -54,8 +54,8 @@ def compile_multi_omic_metrics_to_csv(base_dir, output_csv, model):
     fusions_map = {'early': 'early_fusion', 'late': 'late_fusion'}
     modes = ['loocv', 'rcv']
     metric_keys = [
-        "roc_auc", "specificity", "sensitivity", "bacc", 
-        "precision", "recall", "f1", "gmean", "npv", "mcc", 
+        "roc_auc", "specificity", "sensitivity", "bacc",
+        "precision", "recall", "f1", "gmean", "npv", "mcc",
     ]
     data_dict = {
         "Metric": [key for key in metric_keys]
@@ -89,6 +89,5 @@ def compile_multi_omic_metrics_to_csv(base_dir, output_csv, model):
 if __name__ == "__main__":
     model = "catboost"
     results_path = f"data/results/multi_omic/host=cherry/{model}"
-    output_filename = os.path.join(results_path, "all_metrics.csv") 
+    output_filename = os.path.join(results_path, "all_metrics.csv")
     compile_multi_omic_metrics_to_csv(results_path, output_filename, model=model)
-    

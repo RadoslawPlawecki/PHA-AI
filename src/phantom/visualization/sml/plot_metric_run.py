@@ -14,9 +14,9 @@ def generate_all_metric_grids(data_path="data/ml/sml/SML_CB.csv", savefig=False)
     for model in models:
         for method in methods:
             plot_metrics(
-                df_long=df, 
-                model_name="catboost", 
-                method_name=method, 
+                df_long=df,
+                model_name="catboost",
+                method_name=method,
                 savefig=savefig
             )
 

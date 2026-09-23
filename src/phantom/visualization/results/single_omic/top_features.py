@@ -41,9 +41,9 @@ def generate_importance_plots(base_dir, model):
         'transcription_regulation_ratio': 'Transcription \& regulation',
         'lysogeny_ratio': 'Lysogeny'
     }
-    c0_color = '#34495e'  
-    c1_color = '#27ae60' 
-    eq_color = '#bdc3c7'  
+    c0_color = '#34495e'
+    c1_color = '#27ae60'
+    eq_color = '#bdc3c7'
     plt.rcParams['axes.edgecolor'] = '#cccccc'
     plt.rcParams['axes.linewidth'] = 0.8
     for omic in omics:
@@ -57,7 +57,7 @@ def generate_importance_plots(base_dir, model):
                     has_any_data = True
                     df = pd.read_csv(file_path)
                     df_top = df.sort_values(by='importance', ascending=False).head(10)
-                    df_top = df_top.iloc[::-1] 
+                    df_top = df_top.iloc[::-1]
                     df_top['display_name'] = df_top['feature'].apply(lambda x: feature_name_map.get(x, x))
                     colors = []
                     for _, r in df_top.iterrows():
@@ -97,11 +97,11 @@ def generate_importance_plots(base_dir, model):
             x_bbox = 0.52
         fig.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(x_bbox, 0.94),
                    ncol=1, fontsize=12, frameon=True, facecolor='#fdfdfd', edgecolor='#eaeaea')
-        plt.suptitle(f"Top features: {omics_map[omic]}", 
+        plt.suptitle(f"Top features: {omics_map[omic]}",
                      fontsize=18, fontweight='bold', x=x_bbox, y=0.98, color='#2c3e50')
         plt.tight_layout()
         fig.subplots_adjust(top=0.83, hspace=0.38, wspace=0.35)
-        
+
         output_pdf = f"plots/results/single_omic/{model}/feature_importance_{omic}.pdf"
         plt.savefig(output_pdf, bbox_inches='tight', format='pdf', dpi=300)
         plt.show()

@@ -32,10 +32,10 @@ def iphop_feat_select_plot(data_path, out_dir="plots/feature_selection/iphop"):
             ax = axes[idx]
             y_loocv = [row[f"loocv_{tool}_{strat}"] for strat in strategies]
             y_rcv = [row[f"rcv_{tool}_{strat}"] for strat in strategies]
-            ax.plot(strategies, y_loocv, marker='o', markersize=6, linewidth=2, 
-                        label="LOOCV", color='#1b9e77') 
-            ax.plot(strategies, y_rcv, marker='s', markersize=6, linewidth=2, 
-                    linestyle='--', label="RCV", color='#d95f02') 
+            ax.plot(strategies, y_loocv, marker='o', markersize=6, linewidth=2,
+                        label="LOOCV", color='#1b9e77')
+            ax.plot(strategies, y_rcv, marker='s', markersize=6, linewidth=2,
+                    linestyle='--', label="RCV", color='#d95f02')
             ax.set_title(tools_dict[tool], fontsize=14, weight='bold', pad=10)
             ax.set_xticks([0, 1, 2, 3])
             ax.set_xlabel("Transformation Strategy", fontsize=12, labelpad=8)
@@ -46,7 +46,7 @@ def iphop_feat_select_plot(data_path, out_dir="plots/feature_selection/iphop"):
             if idx == 0:
                 ax.set_ylabel(metric_title, fontsize=13, weight='bold', labelpad=10)
                 ax.legend(fontsize=11, loc='best', frameon=True)
-        plt.suptitle(f"{metric_title}", 
+        plt.suptitle(f"{metric_title}",
                      fontsize=16, weight='bold', y=0.98)
         plt.tight_layout()
         filename = f"{out_dir}/{metric}.pdf"

@@ -86,7 +86,7 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "S"]
 ignore = [
     "E501",    # line length is owned by `ruff format`; don't also lint it in strings/comments
     "B008",    # function call in argument default (questionary idiom)
@@ -97,6 +97,9 @@ ignore = [
 "tests/**" = [
     "S101",    # asserts are the point in tests
     "PLR2004", # magic values are fine in test data/assertions
+]
+"tools/check_outdated_deps.py" = [
+    "S607", # deliberately resolves "pip" via PATH to hit the active venv's pip
 ]
 
 [tool.ruff.lint.isort]

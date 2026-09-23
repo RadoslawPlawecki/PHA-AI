@@ -16,7 +16,7 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
         "auc": "Area Under the Curve",
         "balanced_accuracy": "Balanced Accurary",
         "f1": "F1-score",
-        "precision": "Precision", 
+        "precision": "Precision",
         "recall": "Recall",
         "specificity": "Specificity",
         "gmean": "Geometric Mean",
@@ -34,7 +34,7 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
         "rcv": "Repeated 5-Fold CV"
     }
     model_dict = {
-        "rf": "Random Forest", 
+        "rf": "Random Forest",
         "catboost": "CatBoost"
     }
     modality_dict = {
@@ -43,11 +43,11 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
         "func": "Function"
     }
     fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(20, 8))
-    axes = axes.flatten() 
+    axes = axes.flatten()
     for i, metric in enumerate(metrics):
         ax = axes[i]
-        row_idx = i // 5 
-        col_idx = i % 5   
+        row_idx = i // 5
+        col_idx = i % 5
         plot_df = df_long[
             (df_long["metric"] == metric)
             & (df_long["method"] == method_name)
@@ -71,7 +71,7 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
             cmap="Greens",
             linewidths=0.5,
             annot_kws={"size": 12},
-            square=True, 
+            square=True,
             cbar_kws={"shrink": 0.75, "pad": 0.03},
             ax=ax
         )
@@ -82,13 +82,13 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
             ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=11)
         else:
             ax.set_ylabel("")
-            ax.set_yticklabels([]) 
+            ax.set_yticklabels([])
         ax.set_xticklabels(ax.get_xticklabels(), ha="center", rotation=0, fontsize=11)
         ax.tick_params(axis='both', which='major', labelsize=11)
     plt.tight_layout()
     fig.subplots_adjust(top=0.85, hspace=0.3, wspace=0.15)
     plt.suptitle(
-        f"{model_dict[model_name]} ({method_name_dict[method_name]})", 
+        f"{model_dict[model_name]} ({method_name_dict[method_name]})",
         fontsize=22, y=0.94, weight='bold'
     )
     if savefig:
@@ -97,4 +97,3 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
         plt.savefig(f"{out_dir}/{method_name}_metrics_grid.pdf", format='pdf', bbox_inches='tight')
     plt.show()
     plt.close()
-    

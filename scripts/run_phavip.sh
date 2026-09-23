@@ -4,7 +4,7 @@ for tool_path in data/phanotate/orfs/*/; do
     tool=$(basename "$tool_path")
 
     mkdir -p \
-        data/phabox2/phavip/${tool} 
+        data/phabox2/phavip/${tool}
 
     for file in "${tool_path}"*.fna; do
         filename=$(basename "$file")

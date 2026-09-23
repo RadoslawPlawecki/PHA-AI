@@ -79,7 +79,8 @@ class FeatureOptimizer:
                 return
 
         if mode in ("permutation", "all"):
-            assert n_permutations is not None
+            if n_permutations is None:
+                raise ValueError("n_permutations must be set when mode requires permutation")
             _run_mode_permutation(
                 config,
                 tool,
@@ -90,9 +91,11 @@ class FeatureOptimizer:
                 observed_score=observed,
             )
         if mode in ("nested", "all"):
-            assert outer_folds is not None
-            assert outer_repeats is not None
-            assert top_k_features is not None
+            if outer_folds is None or outer_repeats is None or top_k_features is None:
+                raise ValueError(
+                    "outer_folds, outer_repeats, and top_k_features must be set "
+                    "when mode requires nested CV"
+                )
             _run_mode_nested(
                 config,
                 tool,

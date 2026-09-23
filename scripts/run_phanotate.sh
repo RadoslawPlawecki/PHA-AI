@@ -23,7 +23,7 @@ for tool_path in data/genomes/*/; do
         # 1. Run PHANOTATE
         if [ ! -f "$gff" ]; then
             echo "  Running PHANOTATE..."
-            PHANOTATE/phanotate.py "$file" > "$gff" 
+            PHANOTATE/phanotate.py "$file" > "$gff"
         else
             echo "  Skipping PHANOTATE (exists)"
         fi

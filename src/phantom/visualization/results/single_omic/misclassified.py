@@ -81,22 +81,22 @@ def generate_separated_heatmaps(base_dir, model):
             continue
         fig, axes = plt.subplots(3, 1, figsize=(19, 10), sharex=True)
         if mode == "loocv":
-            cmap = "YlGn"  
+            cmap = "YlGn"
             cbar_label = "Misclassified (1 = Error, 0 = Correct)"
         else:
-            cmap = "Greens"  
+            cmap = "Greens"
             cbar_label = "Error rate"
         for t_idx, tool in enumerate(tools):
             ax = axes[t_idx]
             if tool in matrices:
                 df_plot = matrices[tool]
-                im = sns.heatmap(df_plot, cmap=cmap, vmin=0, vmax=1.0, 
-                            cbar=(t_idx == 0), 
+                im = sns.heatmap(df_plot, cmap=cmap, vmin=0, vmax=1.0,
+                            cbar=(t_idx == 0),
                             cbar_kws={"label": cbar_label, "orientation": "horizontal", "pad": 0.1} if t_idx == 0 else None,
                             linewidths=0.7, linecolor="#f0f0f0", ax=ax)
                 if t_idx == 0:
                     cbar = im.collections[0].colorbar
-                    cbar.set_label(cbar_label, fontsize=14, fontweight='bold') 
+                    cbar.set_label(cbar_label, fontsize=14, fontweight='bold')
                     cbar.ax.tick_params(labelsize=12)
                 ax.tick_params(axis='x', labelsize=10, labelrotation=90)
                 ax.tick_params(axis='y', labelsize=12, labelrotation=0)
@@ -105,7 +105,7 @@ def generate_separated_heatmaps(base_dir, model):
                 ax.text(0.5, 0.5, f"No data for tool: {tools_map[tool]}", ha='center', va='center')
                 ax.axis('off')
         axes[-1].set_xlabel("Samples", fontsize=14, fontweight='bold', labelpad=10)
-        plt.suptitle(f"Misclassified samples: {validation_map[mode]}", 
+        plt.suptitle(f"Misclassified samples: {validation_map[mode]}",
                      fontsize=21, fontweight='bold', y=0.93)
         plt.tight_layout()
         fig.subplots_adjust(top=0.88, wspace=0.2)
