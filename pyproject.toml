@@ -22,7 +22,7 @@ dependencies = [
     "scipy>=1.18.0",
     "seaborn>=0.13.2",
     "tomlkit>=0.13.3",
-    "tqdm>=4.67.3",
+    "tqdm>=4.70.1",
     "xgboost>=3.3.0"
 ]
 
