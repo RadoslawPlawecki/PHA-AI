@@ -9,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 # The scalar metric keys EvaluatorSl.evaluate always produces.
-SL_METRIC_KEYS = {
+SUPERVISED_LEARNING_METRIC_KEYS = {
     "roc_auc",
     "bacc",
     "f1",
@@ -27,7 +27,7 @@ SL_METRIC_KEYS = {
 def assert_valid_metrics(metrics: dict) -> None:
     """EvaluatorSl.evaluate output: every scalar metric present, numeric,
     and in a sane range; confusion matrix internally consistent."""
-    for key in SL_METRIC_KEYS:
+    for key in SUPERVISED_LEARNING_METRIC_KEYS:
         assert key in metrics, f"missing metric {key!r}"
         score = metrics[key]["score"] if isinstance(metrics[key], dict) else metrics[key]
         assert isinstance(score, (int, float)) and not math.isnan(score), key

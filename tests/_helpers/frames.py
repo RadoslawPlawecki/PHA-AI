@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-# A 7-rank lineage string in the format phantom's split_taxonomy expects.
+# A 7-rank lineage string in the format split_taxonomy expects.
 _BACTEROIDES = (
     "d__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;"
     "f__Bacteroidaceae;g__Bacteroides;s__Bacteroides fragilis"
