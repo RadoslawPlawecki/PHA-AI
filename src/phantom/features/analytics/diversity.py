@@ -32,7 +32,7 @@ class DiversityAnalyzer:
             return loaded
         for preprocessed_file in sorted(tool_dir.glob("*.csv")):
             vtool = preprocessed_file.stem.split("_")[0]
-            df = pd.read_csv(preprocessed_file, sep=';')
+            df = pd.read_csv(preprocessed_file, sep=";")
             df["id"] = derive_patient_id(df["Accession"])
             df["label"] = Labeling.derive_label(df["Accession"])
             loaded[vtool] = df
@@ -80,12 +80,14 @@ class DiversityAnalyzer:
             for unit, ids in grouped.items():
                 if ids and not (ids & healthy_ids):
                     sample_numbers = sorted(int(i.split("|S")[1]) for i in ids)
-                    rows.append({
-                        "vtool": vtool,
-                        "unit": unit,
-                        "n_samples": len(sample_numbers),
-                        "samples": ",".join(str(n) for n in sample_numbers),
-                    })
+                    rows.append(
+                        {
+                            "vtool": vtool,
+                            "unit": unit,
+                            "n_samples": len(sample_numbers),
+                            "samples": ",".join(str(n) for n in sample_numbers),
+                        }
+                    )
         columns = ["vtool", "unit", "n_samples", "samples"]
         if not rows:
             return pd.DataFrame(columns=columns)
@@ -112,13 +114,15 @@ class DiversityAnalyzer:
             unit_label = TOOL_TITLES[tool]
             file_stem = TOOL_FILE_STEMS[tool]
             DiversityVisualizer.plot_group_bar_by_vtool(
-                group_stats_by_vtool, value_col="ratio",
+                group_stats_by_vtool,
+                value_col="ratio",
                 title=f"{unit_label} diversity per identified genome",
                 ylabel=f"Avg. distinct {unit_label.lower()} / genome",
                 save_path=out_dir / f"{file_stem}_per_genome.pdf",
             )
             DiversityVisualizer.plot_group_bar_by_vtool(
-                group_stats_by_vtool, value_col="unit_count",
+                group_stats_by_vtool,
+                value_col="unit_count",
                 title=f"{unit_label} diversity per sample",
                 ylabel=f"Avg. distinct {unit_label.lower()} / sample",
                 save_path=out_dir / f"{file_stem}_per_sample.pdf",
@@ -133,12 +137,15 @@ class DiversityAnalyzer:
         for tool in ("phagcn", "cherry"):
             allergy_only = self.allergy_only_units(tool)
             allergy_only_path = out_dir / f"{tool}_allergy_only_{TOOL_UNIT_NAMES[tool]}.csv"
-            allergy_only.to_csv(allergy_only_path, sep=';', index=False)
+            allergy_only.to_csv(allergy_only_path, sep=";", index=False)
 
         from phantom.classification.analytics.saver import ExperimentSaver
-        ExperimentSaver(exp_dir=str(out_dir)).save_metadata({
-            "version": self.version,
-            "tools": ["phagcn", "cherry"],
-        })
+
+        ExperimentSaver(exp_dir=str(out_dir)).save_metadata(
+            {
+                "version": self.version,
+                "tools": ["phagcn", "cherry"],
+            }
+        )
 
         print(f"\n[SUCCESS] Diversity analysis complete. Results saved to {out_dir}")

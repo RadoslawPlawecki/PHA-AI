@@ -11,16 +11,19 @@ import pandas as pd
 
 from phantom.visualization.plots_formatting import use_latex
 
-GROUP_COLORS = {0: '#a1d99b', 1: '#238b45'}
-GROUP_LABELS = {0: 'Healthy', 1: 'Allergy'}
+GROUP_COLORS = {0: "#a1d99b", 1: "#238b45"}
+GROUP_LABELS = {0: "Healthy", 1: "Allergy"}
 VTOOL_DISPLAY_NAMES = {"geN": "geNomad", "VIB": "VIBRANT", "VS2": "VirSorter2"}
 
 
 class DiversityVisualizer:
     @staticmethod
     def plot_group_bar_by_vtool(
-        group_stats_by_vtool: dict[str, pd.DataFrame], value_col: str,
-        title: str, ylabel: str, save_path: Path | str | None = None
+        group_stats_by_vtool: dict[str, pd.DataFrame],
+        value_col: str,
+        title: str,
+        ylabel: str,
+        save_path: Path | str | None = None,
     ) -> None:
         """
         group_stats_by_vtool[vtool] is indexed by label (0/1) with
@@ -48,16 +51,20 @@ class DiversityVisualizer:
                 nan=0.0,
             )
             ax.bar(
-                [GROUP_LABELS[label] for label in labels], means,
-                yerr=stds, capsize=6, ecolor='black',
+                [GROUP_LABELS[label] for label in labels],
+                means,
+                yerr=stds,
+                capsize=6,
+                ecolor="black",
                 color=[GROUP_COLORS[label] for label in labels],
-                edgecolor='black', linewidth=0.8,
+                edgecolor="black",
+                linewidth=0.8,
             )
-            ax.set_title(VTOOL_DISPLAY_NAMES.get(vtool, vtool), fontsize=13, weight='bold', pad=10)
-            ax.grid(axis='y', linestyle='--', alpha=0.5)
+            ax.set_title(VTOOL_DISPLAY_NAMES.get(vtool, vtool), fontsize=13, weight="bold", pad=10)
+            ax.grid(axis="y", linestyle="--", alpha=0.5)
             ax.set_axisbelow(True)
         axes[0].set_ylabel(ylabel, fontsize=12, labelpad=8)
-        plt.suptitle(title, fontsize=15, weight='bold', y=0.98)
+        plt.suptitle(title, fontsize=15, weight="bold", y=0.98)
         plt.tight_layout()
         if save_path:
             plt.savefig(save_path, format="pdf", bbox_inches="tight")

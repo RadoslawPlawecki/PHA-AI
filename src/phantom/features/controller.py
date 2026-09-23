@@ -93,5 +93,6 @@ class FeatureController:
         out_dir = FeatureDiversityPrompts.ask_out_dir(version)
         DiversityAnalyzer(version=version, config_mgr=self.config_mgr).run(out_dir)
 
+
 if __name__ == "__main__":
     FeatureController().run()

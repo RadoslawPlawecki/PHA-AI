@@ -294,7 +294,8 @@ class FeatureDiversityPrompts:
     def ask_out_dir(version: str) -> Path:
         default_dir = ConfigLoader.resolve_data_path(f"data/results/diversity/{version}")
         answer = questionary.path(
-            "Output directory for diversity results:", default=str(default_dir),
-            only_directories=True
+            "Output directory for diversity results:",
+            default=str(default_dir),
+            only_directories=True,
         ).ask()
         return Path(answer) if answer else default_dir
