@@ -79,6 +79,7 @@ class FeatureOptimizer:
                 return
 
         if mode in ("permutation", "all"):
+            assert n_permutations is not None
             _run_mode_permutation(
                 config,
                 tool,
@@ -89,6 +90,9 @@ class FeatureOptimizer:
                 observed_score=observed,
             )
         if mode in ("nested", "all"):
+            assert outer_folds is not None
+            assert outer_repeats is not None
+            assert top_k_features is not None
             _run_mode_nested(
                 config,
                 tool,

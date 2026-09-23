@@ -24,7 +24,7 @@ class ConfigLoader:
 
     def __init__(self, path: Path | None = None):
         self.path = path or self.DEFAULT_CONFIG_PATH
-        self.config = None
+        self.config: dict | None = None
 
     @classmethod
     def resolve_data_path(cls, relative_path: str | Path) -> Path:

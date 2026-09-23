@@ -18,8 +18,8 @@ class CVResults:
     y_pred: np.ndarray
     y_prob: np.ndarray
     test_idx: np.ndarray
-    importance_mean: np.ndarray
-    importance_std: np.ndarray | None = None
+    importance_mean: np.ndarray | dict[str, np.ndarray]
+    importance_std: np.ndarray | dict[str, np.ndarray] | None = None
     fold_results: list[dict] = field(default_factory=list)
     folds: np.ndarray | None = None
     repeats: np.ndarray | None = None
@@ -127,7 +127,7 @@ class LateFusionRepeatedCVValidator(BaseValidator):
         y_true_all, y_pred_all, y_prob_all, test_idx_all = [], [], [], []
         folds_all, repeats_all = [], []
         modalities = list(X_data.keys())
-        perm_importances_folds = {m: [] for m in modalities}
+        perm_importances_folds: dict[str, list[np.ndarray]] = {m: [] for m in modalities}
         any_values = next(iter(X_data.values()))["values"]
         total = self.cv.get_n_splits(y=y)
         it = tqdm(

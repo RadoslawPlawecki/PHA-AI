@@ -12,6 +12,7 @@ from phantom.preprocessing.collection.genomes import GenomeCollector
 from phantom.preprocessing.masks.generator import CheckvMaskGenerator
 from phantom.preprocessing.metadata.labeling import (
     ExternalCSVLabeler,
+    LabelingStrategy,
     ManualLabeler,
     PatternLabeler,
     SampleThresholdLabeler,
@@ -63,7 +64,7 @@ class PreprocessingController:
         choice = PreprocessingPrompts.ask_strategy(len(df))
         if not choice:
             return pd.DataFrame()
-        strategy = None
+        strategy: LabelingStrategy | None = None
         if choice.startswith("1)"):
             selected = PreprocessingPrompts.ask_interactive(df["id"].tolist())
             if selected is not None:

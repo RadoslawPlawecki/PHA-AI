@@ -68,7 +68,7 @@ def run_permutation_test(
     baseline_score = Significance.majority_class_baseline(true_labels, target_metric)
 
     rng = np.random.default_rng(random_state)
-    null_scores = []
+    null_scores_list: list[float] = []
     per_permutation_best_params = []
     for rep in tqdm(range(n_permutations), desc=f"{tool.upper()} permutation test"):
         tqdm.write(f"[INFO] {tool.upper()} permutation test -- rep {rep + 1}/{n_permutations}")
@@ -84,10 +84,10 @@ def run_permutation_test(
             y_override=y_override,
             verbose=False,
         )
-        null_scores.append(study.best_value)
+        null_scores_list.append(study.best_value)
         per_permutation_best_params.append(study.best_params)
 
-    null_scores = np.array(null_scores)
+    null_scores = np.array(null_scores_list)
     p_value = Significance.permutation_pvalue(observed_score, null_scores)
 
     return PermutationTestResult(

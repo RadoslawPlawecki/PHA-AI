@@ -45,7 +45,7 @@ def split_taxonomy(
     return pd.concat([df, expanded], axis=1)
 
 
-def apply_mask(df: pd.DataFrame, mask_path: Path) -> pd.DataFrame:
+def apply_mask(df: pd.DataFrame, mask_path: Path | None) -> pd.DataFrame:
     if mask_path is None:
         print(f"[INFO] No mask applied. Records retained: {len(df)}")
         return df

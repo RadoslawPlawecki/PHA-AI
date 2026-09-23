@@ -9,10 +9,10 @@ class DataAligner:
     @staticmethod
     def align(X_raw: dict) -> tuple[dict, np.ndarray, list]:
         modalities = list(X_raw.keys())
-        common_samples = set(X_raw[modalities[0]]["ids"])
+        common_samples_set = set(X_raw[modalities[0]]["ids"])
         for m in modalities[1:]:
-            common_samples = common_samples.intersection(X_raw[m]["ids"])
-        common_samples = sorted(list(common_samples))
+            common_samples_set = common_samples_set.intersection(X_raw[m]["ids"])
+        common_samples = sorted(common_samples_set)
         X_aligned = {}
         y_aligned = None
         for m in modalities:
@@ -33,4 +33,5 @@ class DataAligner:
                 assert np.array_equal(y_aligned, modality_labels), (
                     f"Labels are not consistent for modality: {m}"
                 )
+        assert y_aligned is not None, "X_raw must contain at least one modality"
         return X_aligned, y_aligned, common_samples

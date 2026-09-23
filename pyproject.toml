@@ -37,6 +37,7 @@ dev = [
     "hypothesis>=6.168.1",
     "coverage[toml]>=7.16.1",
     "pre-commit>=4.0",
+    "mypy>=1.14",
 ]
 
 [tool.setuptools.packages.find]
@@ -100,3 +101,10 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["phantom"]
+
+[tool.mypy]
+ignore_missing_imports = true
+exclude = [
+    "^src/phantom/other/",         # pre-refactor, not wired into any controller
+    "^src/phantom/visualization/", # pre-refactor, pending port-vs-delete triage
+]

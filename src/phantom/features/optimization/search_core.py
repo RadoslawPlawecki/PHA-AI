@@ -12,6 +12,7 @@ and running an Optuna study over its search space (search_<tool>). Not a
 strategy itself -- see optimizer.py for the orchestrator.
 """
 
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
@@ -45,7 +46,7 @@ VALIDATORS = {
     "rcv": RepeatedCVValidator,
 }
 
-CHERRY_SEARCH_SPACE = {
+CHERRY_SEARCH_SPACE: dict[str, Sequence[str | float | int | bool | None]] = {
     "binary": [True, False],
     "min_patients": list(range(1, 11)),
     "feature_col": [
@@ -58,7 +59,10 @@ CHERRY_SEARCH_SPACE = {
     ],
 }
 
-PHAGCN_SEARCH_SPACE = {"binary": [True, False], "min_patients": list(range(1, 11))}
+PHAGCN_SEARCH_SPACE: dict[str, Sequence[str | float | int | bool | None]] = {
+    "binary": [True, False],
+    "min_patients": list(range(1, 11)),
+}
 
 CHERRY_DEFAULT_TRIALS = 120
 PHAGCN_DEFAULT_TRIALS = 20
@@ -343,13 +347,13 @@ def search_phavip(
     )
 
 
-SEARCH_FNS = {
+SEARCH_FNS: dict[str, Callable[..., optuna.Study]] = {
     "cherry": search_cherry,
     "phagcn": search_phagcn,
     "phavip": search_phavip,
 }
 
-APPLY_FNS = {
+APPLY_FNS: dict[str, Callable[..., pd.DataFrame]] = {
     "cherry": apply_cherry_config,
     "phagcn": apply_phagcn_config,
     "phavip": apply_phavip_config,

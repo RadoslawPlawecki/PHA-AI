@@ -27,7 +27,7 @@ class DiversityAnalyzer:
 
     def _load_vtool_files(self, tool: str) -> dict[str, pd.DataFrame]:
         tool_dir = self.preprocessed_dir / tool
-        loaded = {}
+        loaded: dict[str, pd.DataFrame] = {}
         if not tool_dir.is_dir():
             return loaded
         for preprocessed_file in sorted(tool_dir.glob("*.csv")):
