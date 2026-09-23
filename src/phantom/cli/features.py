@@ -19,6 +19,7 @@ class FeatureCollectionPrompts:
                 "3) Preprocess features",
                 "4) Extract features",
                 "5) Optimize features",
+                "6) Analyze diversity (healthy vs. allergy)",
                 "Back",
             ],
         ).ask()
@@ -277,3 +278,14 @@ class FeatureOptimizationPrompts:
             "Output directory for results:", default=str(default_dir), only_directories=True
         ).ask()
         return Path(answer)
+
+
+class FeatureDiversityPrompts:
+    @staticmethod
+    def ask_out_dir(version: str) -> Path:
+        default_dir = ConfigLoader.resolve_data_path(f"data/results/diversity/{version}")
+        answer = questionary.path(
+            "Output directory for diversity results:", default=str(default_dir),
+            only_directories=True
+        ).ask()
+        return Path(answer) if answer else default_dir

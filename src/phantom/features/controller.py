@@ -7,12 +7,13 @@ from pathlib import Path
 
 from phantom.config.loader import ConfigLoader
 from phantom.config.features import FeatureConfigManager
-from phantom.cli.features import FeatureCollectionPrompts
+from phantom.cli.features import FeatureCollectionPrompts, FeatureDiversityPrompts
 from phantom.features.collection.importer import FeatureImporter
 from phantom.features.merging.concatenator import FeatureConcatenator
 from phantom.features.preprocessing.preprocessor import FeaturePreprocessor
 from phantom.features.extraction.extractor import FeatureExtractor
 from phantom.features.optimization.optimizer import FeatureOptimizer
+from phantom.features.analytics.diversity import DiversityAnalyzer
 
 
 class FeatureController:
@@ -38,6 +39,8 @@ class FeatureController:
                 self._extract_features()
             elif action.startswith("5)"):
                 self._optimize_features()
+            elif action.startswith("6)"):
+                self._analyze_diversity()
 
     def _import_features(self) -> None:
         importer = FeatureImporter(config_path=self.config_path)
@@ -84,6 +87,17 @@ class FeatureController:
 
     def _optimize_features(self):
         FeatureOptimizer(config_mgr=self.config_mgr).run()
+
+    def _analyze_diversity(self):
+        existing_versions = self.config_mgr.get_existing_versions()
+        if not existing_versions:
+            print("[ERROR] No feature versions available for diversity analysis.")
+            return
+        version = FeatureCollectionPrompts.ask_existing_version(existing_versions)
+        if not version:
+            return
+        out_dir = FeatureDiversityPrompts.ask_out_dir(version)
+        DiversityAnalyzer(version=version, config_mgr=self.config_mgr).run(out_dir)
 
 if __name__ == "__main__":
     FeatureController().run()
