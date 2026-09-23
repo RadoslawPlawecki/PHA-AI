@@ -14,7 +14,7 @@ def plot_metrics(df_long, model_name, method_name, savefig=True):
     metrics = ["auc", "balanced_accuracy", "f1", "precision", "recall", "specificity", "gmean", "nvp", "pr_auc", "mcc"]
     metrics_dict = {
         "auc": "Area Under the Curve",
-        "balanced_accuracy": "Balanced Accurary",
+        "balanced_accuracy": "Balanced Accuracy",
         "f1": "F1-score",
         "precision": "Precision",
         "recall": "Recall",

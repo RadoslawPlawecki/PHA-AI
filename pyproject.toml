@@ -38,6 +38,7 @@ dev = [
     "coverage[toml]>=7.16.1",
     "pre-commit>=4.0",
     "mypy>=1.14",
+    "codespell>=2.4",
 ]
 
 [tool.setuptools.packages.find]
@@ -111,3 +112,7 @@ exclude = [
     "^src/phantom/other/",         # pre-refactor, not wired into any controller
     "^src/phantom/visualization/", # pre-refactor, pending port-vs-delete triage
 ]
+
+[tool.codespell]
+skip = "*.csv,*.tsv,*.json,.git,*.pdf"
+ignore-words-list = "fpr,strat,holliday"

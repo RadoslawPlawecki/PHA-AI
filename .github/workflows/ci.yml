@@ -22,6 +22,8 @@ jobs:
         run: ruff check .
       - name: ruff format --check
         run: ruff format --check .
+      - name: codespell
+        run: codespell
       - name: mypy
         run: mypy src/phantom
       - name: pre-commit hygiene hooks
