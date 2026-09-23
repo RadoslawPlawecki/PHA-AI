@@ -36,6 +36,7 @@ dev = [
     "freezegun>=1.5",
     "hypothesis>=6.100",
     "coverage[toml]>=7.5",
+    "pre-commit>=4.0",
 ]
 
 [tool.setuptools.packages.find]
