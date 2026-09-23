@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from phantom.config.features import FeatureConfigManager
 from phantom.classification.data.labeling import Labeling
-from phantom.features.pipelines.matrix import derive_patient_id
+from phantom.config.features import FeatureConfigManager
 from phantom.features.analytics.visualizer import DiversityVisualizer
+from phantom.features.pipelines.matrix import derive_patient_id
 
 TOOL_FEATURE_COL = {"phagcn": "genus", "cherry": "ncbi_genus"}
 TOOL_TITLES = {"phagcn": "Phage genus", "cherry": "Bacterial host genus"}
@@ -26,7 +26,6 @@ class DiversityAnalyzer:
         self.preprocessed_dir = self.config_mgr.get_stage_dir(version, "preprocessed")
 
     def _load_vtool_files(self, tool: str) -> dict[str, pd.DataFrame]:
-        feature_col = TOOL_FEATURE_COL[tool]
         tool_dir = self.preprocessed_dir / tool
         loaded = {}
         if not tool_dir.is_dir():

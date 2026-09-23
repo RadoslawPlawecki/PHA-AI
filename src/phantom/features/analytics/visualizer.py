@@ -30,10 +30,10 @@ class DiversityVisualizer:
         """
         use_latex()
         vtools = list(group_stats_by_vtool)
-        fig, axes = plt.subplots(1, len(vtools), figsize=(5 * len(vtools), 5), sharey=True)
+        _, axes = plt.subplots(1, len(vtools), figsize=(5 * len(vtools), 5), sharey=True)
         if len(vtools) == 1:
             axes = [axes]
-        for ax, vtool in zip(axes, vtools):
+        for ax, vtool in zip(axes, vtools, strict=True):
             stats = group_stats_by_vtool[vtool]
             labels = [0, 1]
             means = [
