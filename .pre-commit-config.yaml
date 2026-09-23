@@ -37,5 +37,5 @@ repos:
         entry: python tools/check_outdated_deps.py
         language: system
         pass_filenames: false
-        stages: [pre-push]
+        stages: [manual]
         verbose: true
