@@ -7,7 +7,58 @@ on:
     branches: [master]
 
 jobs:
+  commit-messages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Commit start with [PHM-X] or [PR-X]
+        env:
+          RANGE: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha) || format('{0}..{1}', github.event.before, github.sha) }}
+        run: |
+          bad=$(git log --no-merges --perl-regexp --author='^(?!dependabot\[bot\])' --format=%s "$RANGE" | grep -Ev '^\[(PHM|PR)-[0-9]+\] ' || true)
+          if [ -n "$bad" ]; then
+            echo "Commit must start with [PHM-<number>] or [PR-<number>]:"
+            echo "$bad"
+            exit 1
+          fi
+
   lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      # Takes the version specifiers from the dev extra in pyproject.toml, so they never drift.
+      - name: Install lint tools
+        run: |
+          python -c "import re, tomllib; dev = tomllib.load(open('pyproject.toml', 'rb'))['project']['optional-dependencies']['dev']; print('\n'.join(s for s in dev if re.match(r'(ruff|codespell|pre-commit)\b', s)))" > "$RUNNER_TEMP/lint-requirements.txt"
+          cat "$RUNNER_TEMP/lint-requirements.txt"
+          pip install -r "$RUNNER_TEMP/lint-requirements.txt"
+      - name: ruff check
+        if: ${{ !cancelled() }}
+        run: ruff check .
+      - name: ruff format --check
+        if: ${{ !cancelled() }}
+        run: ruff format --check .
+      - name: codespell
+        if: ${{ !cancelled() }}
+        run: codespell
+      - name: trailing-whitespace
+        if: ${{ !cancelled() }}
+        run: pre-commit run trailing-whitespace --all-files --hook-stage pre-push
+      - name: check-merge-conflict
+        if: ${{ !cancelled() }}
+        run: pre-commit run check-merge-conflict --all-files --hook-stage pre-push
+      - name: check-added-large-files
+        if: ${{ !cancelled() }}
+        run: pre-commit run check-added-large-files --all-files --hook-stage pre-push
+
+  typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,19 +69,8 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install dev dependencies
         run: pip install -e ".[dev]"
-      - name: ruff check
-        run: ruff check .
-      - name: ruff format --check
-        run: ruff format --check .
-      - name: codespell
-        run: codespell
       - name: mypy
         run: mypy src/phantom
-      - name: pre-commit hygiene hooks
-        run: |
-          pre-commit run trailing-whitespace --all-files --hook-stage pre-push
-          pre-commit run check-merge-conflict --all-files --hook-stage pre-push
-          pre-commit run check-added-large-files --all-files --hook-stage pre-push
 
   test:
     runs-on: ubuntu-latest
